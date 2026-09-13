@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090a">
+  <title>一桌 · Tabletop & Screen</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="tabletop-page">
+  <!--
+  THESIS: A working collection wall behaves like a glass vitrine; the object remains primary even while its record is edited.
+  OWN-WORLD: Strict grayscale liquid glass, chromatic uncut covers, instrument-like rating dials, and cover-driven atmosphere.
+  STORY: Browse by meaningful groups, pull one game forward, then unlock exact editing without leaving the wall.
+  FIRST VIEWPORT: Floating nav and compact view controls sit above grouped cover-led cards; one card can occupy the full group as a stage.
+  FORM: User-pinned liquid-glass collection world fused with a glass-vitrine cultural artifact; seed key 4799f45e.
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+  -->
+  <div class="ambient ambient--tabletop" aria-hidden="true"></div>
+  <div id="ambientCover" class="ambient-cover" aria-hidden="true"></div>
+  <header class="app-nav liquid-strong">
+    <a class="brand-lockup" href="index.html"><span class="brand-mark" aria-hidden="true"><span></span><span></span></span><span><b>一桌·一屏</b><small>Tabletop &amp; Screen</small></span></a>
+    <nav class="section-nav" aria-label="收藏版块">
+      <a class="is-active" href="tabletop.html" aria-current="page">一桌</a>
+      <a href="screen.html">一屏</a>
+    </nav>
+    <div class="nav-actions">
+      <button id="backupButton" class="icon-text-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 20h14"/></svg><span>备份</span></button>
+      <button id="categoryButton" class="icon-text-button edit-only" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M4 17h16M18 4v6M10 14v6"/></svg><span>分类管理</span></button>
+      <div class="mode-switch" aria-label="查看或编辑模式">
+        <button class="is-active" id="viewModeButton" type="button">查看</button>
+        <button id="editModeButton" type="button">编辑</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="collection-shell">
+    <section class="collection-intro">
+      <div>
+        <h1>一桌</h1>
+        <p><span id="collectionCount">0</span> 件桌上藏品</p>
+      </div>
+      <button id="addGameButton" class="primary-button edit-only" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>添加桌游</button>
+    </section>
+
+    <section class="view-toolbar liquid-strong" aria-label="收藏视图控制">
+      <label class="search-field">
+        <span class="sr-only">搜索收藏</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+        <input id="searchInput" type="search" placeholder="搜索名称、版本、主题、备注或扩展">
+      </label>
+      <label class="compact-field"><span>分组</span><select id="groupSelect"></select></label>
+      <label class="compact-field"><span>组内</span><select id="sortSelect"></select></label>
+      <button id="sortDirectionButton" class="square-button" type="button" aria-label="切换排序方向"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6v12m-3-3 3 3 3-3M16 18V6m-3 3 3-3 3 3"/></svg></button>
+      <button id="filterButton" class="toolbar-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8Z"/></svg>筛选 <span id="filterCount" class="count-dot" hidden>0</span></button>
+      <button id="groupsButton" class="square-button" type="button" aria-label="全部收起或展开分组"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"/></svg></button>
+    </section>
+    <div id="activeFilters" class="active-filters" aria-live="polite"></div>
+    <section id="collection" class="collection" aria-live="polite"></section>
+  </main>
+
+  <aside id="filterDrawer" class="drawer liquid-strong" aria-labelledby="filterTitle" aria-hidden="true">
+    <div class="drawer-head"><div><h2 id="filterTitle">筛选收藏</h2><p>最多叠加三条不同字段</p></div><button class="square-button" data-close-drawer type="button" aria-label="关闭筛选"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+    <div id="filterRows" class="filter-rows"></div>
+    <button id="addFilterButton" class="secondary-button" type="button">添加筛选条件</button>
+    <div class="drawer-actions"><button id="clearFiltersButton" class="ghost-button" type="button">清除全部</button><button id="applyFiltersButton" class="primary-button" type="button">应用筛选</button></div>
+  </aside>
+
+  <aside id="categoryDrawer" class="drawer drawer--wide liquid-strong" aria-labelledby="categoryTitle" aria-hidden="true">
+    <div class="drawer-head"><div><h2 id="categoryTitle">分类管理</h2><p>改名与合并会同步更新全部桌游</p></div><button class="square-button" data-close-drawer type="button" aria-label="关闭分类管理"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+    <div id="categoryTabs" class="category-tabs" role="tablist"></div>
+    <div id="categoryList" class="category-list"></div>
+    <form id="addCategoryForm" class="inline-form"><label><span>新标签</span><input name="label" required maxlength="30"></label><button class="primary-button" type="submit">添加</button></form>
+  </aside>
+
+  <aside id="backupDrawer" class="drawer liquid-strong" aria-labelledby="backupTitle" aria-hidden="true">
+    <div class="drawer-head"><div><h2 id="backupTitle">备份与恢复</h2><p id="backupStatus">尚未备份</p></div><button class="square-button" data-close-drawer type="button" aria-label="关闭备份面板"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+    <div class="backup-actions">
+      <button id="exportButton" class="primary-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 20h14"/></svg>导出完整备份</button>
+      <label class="file-action secondary-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9m-4 4 4-4 4 4M5 4h14"/></svg>选择备份恢复<input id="importInput" type="file" accept="application/json,.json"></label>
+    </div>
+    <p class="drawer-note">恢复会先自动下载当前收藏，再用所选备份完整替换。不同浏览器配置的数据互不共享。</p>
+  </aside>
+
+  <dialog id="pinDialog" class="app-dialog liquid-strong">
+    <form id="pinForm" method="dialog">
+      <div class="dialog-head"><h2 id="pinTitle">进入编辑模式</h2><button class="square-button" value="cancel" type="submit" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <p id="pinDescription">输入 6 位数字密码。</p>
+      <label><span>密码</span><input id="pinInput" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off" required></label>
+      <label id="pinConfirmField" hidden><span>再次输入</span><input id="pinConfirmInput" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="off"></label>
+      <p id="pinError" class="form-error" role="alert"></p>
+      <button class="primary-button" value="default" type="submit">确认</button>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDialog" class="app-dialog liquid-strong">
+    <form id="confirmForm" method="dialog">
+      <div class="dialog-head"><h2 id="confirmTitle">请确认</h2><button class="square-button" value="cancel" type="submit" aria-label="关闭"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+      <div id="confirmBody"></div>
+      <div class="dialog-actions"><button class="ghost-button" value="cancel" type="submit">取消</button><button id="confirmAction" class="danger-button" value="confirm" type="submit">确认</button></div>
+    </form>
+  </dialog>
+
+  <div id="toastRegion" class="toast-region" aria-live="polite"></div>
+  <div id="drawerScrim" class="drawer-scrim" hidden></div>
+  <div class="wide-window-notice" role="status">请使用宽度至少 1024px 的桌面浏览器打开。</div>
+  <script type="module" src="js/tabletop.js"></script>
+</body>
+</html>
