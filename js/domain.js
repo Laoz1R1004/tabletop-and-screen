@@ -10,6 +10,15 @@ const DEFAULT_TAXONOMIES = {
 const isBlank = (value) => value === null || value === undefined || value === "";
 const numberInRange = (value, min, max) => isBlank(value) || (Number.isFinite(Number(value)) && Number(value) >= min && Number(value) <= max);
 
+export function formatDecimal(value) {
+  return isBlank(value) ? "—" : Number(value).toFixed(2);
+}
+
+export function formatPlayCount(value) {
+  if (isBlank(value)) return "未记录";
+  return Number(value) > 5 ? "常开" : `${Number(value)} 局`;
+}
+
 export function createDefaultState() {
   return {
     games: [],
