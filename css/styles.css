@@ -129,9 +129,7 @@ h1, h2, h3 { text-wrap: balance; }
 .brand-lockup > span:last-child { display: grid; }
 .brand-lockup b { font-family: var(--brand); font-size: 21px; font-weight: 500; line-height: 1.05; letter-spacing: .05em; }
 .brand-lockup small { margin-top: 4px; color: var(--ink-3); font-size: 9px; letter-spacing: .17em; text-transform: uppercase; }
-.brand-mark { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; width: 32px; height: 32px; padding: 5px; border-radius: 9px; background: rgba(255,255,255,.1); box-shadow: inset 0 1px rgba(255,255,255,.2); }
-.brand-mark span { border-radius: 2px 7px 2px 7px; background: rgba(255,255,255,.82); }
-.brand-mark span:last-child { border-radius: 7px 2px 7px 2px; opacity: .5; }
+.brand-mark { display: block; width: 40px; height: 40px; flex: 0 0 40px; object-fit: contain; }
 
 .app-nav {
   position: sticky;
