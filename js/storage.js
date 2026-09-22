@@ -51,9 +51,22 @@ export async function loadState() {
   return normalizeBackup({ format: "tabletop-and-screen", version: 1, state, images: [] }).state;
 }
 
-export async function saveState(state) {
+export function mergeSavedState(current, state, scope = 'tabletop') {
+  if (!current) return structuredClone(state);
+  const next = structuredClone(current);
+  const fields = scope === 'screen' ? ['screen'] : ['games', 'taxonomies', 'view'];
+  for (const field of fields) next[field] = structuredClone(state[field]);
+  next.security = structuredClone(current.security?.pinHash ? current.security : state.security);
+  next.meta = { ...current.meta, ...state.meta, lastBackupAt: [current.meta?.lastBackupAt, state.meta?.lastBackupAt].filter(Boolean).sort().at(-1) || null };
+  return next;
+}
+
+export async function saveState(state, scope = 'tabletop') {
   state.meta = { ...state.meta, updatedAt: new Date().toISOString() };
-  await transact("state", "readwrite", (store) => store.put(structuredClone(state), "app"));
+  await transact("state", "readwrite", (store) => {
+    const read = store.get('app');
+    read.onsuccess = () => store.put(mergeSavedState(read.result, state, scope), 'app');
+  });
   return state;
 }
 
@@ -121,11 +134,13 @@ export function summarizeBackup(payload) {
     exportedAt: payload.exportedAt,
     games: payload.state.games.length,
     expansions: payload.state.games.reduce((total, game) => total + (game.expansions?.length ?? 0), 0),
-    images: payload.images.length
+    images: payload.images.length,
+    screenGames: payload.state.screen?.games.length ?? 0
   };
 }
 
 export async function createBackupPayload(state) {
+  state = await loadState();
   const records = await transact("images", "readonly", (store) => store.getAll());
   const images = await Promise.all((records ?? []).map(async ({ id, name, type, original }) => ({
     id,
@@ -152,7 +167,7 @@ export async function readBackupFile(file) {
 
 export async function restoreBackup(payload) {
   const normalized = normalizeBackup(payload);
-  const imageRecords = await Promise.all(normalized.images.map(async (image) => {
+  let imageRecords = await Promise.all(normalized.images.map(async (image) => {
     const original = await dataUrlToBlob(image.data);
     return {
       id: image.id,
@@ -162,6 +177,13 @@ export async function restoreBackup(payload) {
       thumbnail: await createThumbnail(original)
     };
   }));
+  if (!normalized.hasScreenData) {
+    const current = await loadState();
+    const records = await transact('images', 'readonly', store => store.getAll());
+    const preserved = preserveScreenOnLegacyRestore(normalized.state, current, imageRecords, records);
+    normalized.state = preserved.state;
+    imageRecords = preserved.images;
+  }
   const db = await openDb();
   await new Promise((resolve, reject) => {
     const transaction = db.transaction(["state", "images", "drafts"], "readwrite");
@@ -177,4 +199,18 @@ export async function restoreBackup(payload) {
   });
   db.close();
   return normalized.state;
+}
+
+export function preserveScreenOnLegacyRestore(incoming, current, images, currentImages) {
+  const state = structuredClone(incoming);
+  state.screen = structuredClone(current.screen);
+  const result = [...images], existing = new Set(images.map(i=>i.id));
+  for (const coverId of new Set(state.screen.games.map(g=>g.coverId).filter(Boolean))) {
+    const record = currentImages.find(i=>i.id===coverId);
+    if (!record) throw new Error('现有电子游戏封面缺失，已取消恢复');
+    const id = existing.has(coverId) ? makeId('image') : coverId;
+    state.screen.games.forEach(g=>{if(g.coverId===coverId)g.coverId=id});
+    result.push({...record,id}); existing.add(id);
+  }
+  return {state, images:result};
 }

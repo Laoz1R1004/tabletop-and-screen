@@ -40,9 +40,9 @@
         <span class="portal-index">SCREEN</span>
         <span class="portal-copy">
           <strong>一屏</strong>
-          <span>尚未布置</span>
+          <span><b id="homeScreenCount">0</b> 款电子游戏</span>
         </span>
-        <span class="portal-action">查看空房间 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span>
+        <span class="portal-action">进入收藏 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span>
       </a>
     </section>
   </main>
@@ -51,6 +51,7 @@
     import { loadState } from "./js/storage.js";
     loadState().then((state) => {
       document.getElementById("homeGameCount").textContent = state.games.length;
+      document.getElementById("homeScreenCount").textContent = state.screen.games.length;
     });
   </script>
 </body>

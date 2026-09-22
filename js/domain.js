@@ -1,3 +1,5 @@
+import { defaultScreen } from './screen-domain.js';
+
 const DEFAULT_TAXONOMIES = {
   itemType: ["桌游", "收藏类"],
   collectionType: ["花切扑克", "塔罗牌", "其他"],
@@ -22,6 +24,7 @@ export function formatPlayCount(value) {
 export function createDefaultState() {
   return {
     games: [],
+    screen: defaultScreen(),
     taxonomies: structuredClone(DEFAULT_TAXONOMIES),
     view: {
       groupBy: "designSchool",
@@ -168,10 +171,12 @@ export function normalizeBackup(input) {
     format: input.format,
     version: 1,
     exportedAt: input.exportedAt ?? new Date().toISOString(),
+    hasScreenData: input.hasScreenData ?? Object.hasOwn(input.state, 'screen'),
     state: {
       ...defaults,
       ...input.state,
       games: input.state.games ?? [],
+      screen: { ...defaults.screen, ...input.state.screen, taxonomies: { ...defaults.screen.taxonomies, ...input.state.screen?.taxonomies }, view: { ...defaults.screen.view, ...input.state.screen?.view } },
       taxonomies: { ...defaults.taxonomies, ...input.state.taxonomies },
       view: { ...defaults.view, ...input.state.view },
       security: { ...defaults.security, ...input.state.security },
