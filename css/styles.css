@@ -249,7 +249,11 @@ h1, h2, h3 { text-wrap: balance; }
 .group-toggle { width: 40px; height: 40px; border-radius: 50%; color: var(--ink-3); background: rgba(255,255,255,.045); transition: transform .25s var(--ease), color .2s, background .2s; }
 .group-toggle:hover { color: var(--ink); background: rgba(255,255,255,.09); }
 .group.is-collapsed .group-toggle { transform: rotate(-90deg); }
-.game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; align-items: stretch; }
+.card-size-field { min-width: 94px; }
+.card-size-field select { min-width: 42px; }
+.collection { --card-scale: 1; }
+.game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(320px * var(--card-scale)), 1fr)); gap: 18px; align-items: stretch; }
+.game-grid > .game-card { width: 320px; zoom: var(--card-scale); }
 .group.is-collapsed .game-grid { display: none; }
 
 .game-card {

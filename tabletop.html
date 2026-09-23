@@ -55,6 +55,7 @@
       <button id="sortDirectionButton" class="square-button" type="button" aria-label="切换排序方向"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6v12m-3-3 3 3 3-3M16 18V6m-3 3 3-3 3 3"/></svg></button>
       <button id="filterButton" class="toolbar-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7v6l-4 2v-8Z"/></svg>筛选 <span id="filterCount" class="count-dot" hidden>0</span></button>
       <button id="groupsButton" class="square-button" type="button" aria-label="全部收起或展开分组"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9 5 5 5-5"/></svg></button>
+      <label class="compact-field card-size-field"><span>卡片</span><select id="cardSizeSelect" aria-label="卡片大小"><option value="large">大</option><option value="medium" selected>中</option><option value="small">小</option></select></label>
     </section>
     <div id="activeFilters" class="active-filters" aria-live="polite"></div>
     <section id="collection" class="collection" aria-live="polite"></section>
@@ -106,5 +107,6 @@
   <div id="drawerScrim" class="drawer-scrim" hidden></div>
   <div class="wide-window-notice" role="status">请使用宽度至少 1024px 的桌面浏览器打开。</div>
   <script type="module" src="js/tabletop.js"></script>
+  <script type="module" src="js/card-size.js"></script>
 </body>
 </html>
