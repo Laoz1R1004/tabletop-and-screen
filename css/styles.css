@@ -453,7 +453,7 @@ textarea { min-height: 110px; resize: vertical; }
 .save-actions { display: flex; gap: 8px; }
 
 .home-shell { min-height: 100vh; padding: 28px; display: grid; grid-template-rows: auto 1fr; }
-.home-brand { padding: 0 4px 24px; }
+.home-brand { padding: 0 4px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .portal-grid { min-height: 0; display: grid; grid-template-columns: 1.12fr .88fr; gap: 16px; }
 .portal { min-height: 660px; padding: 32px; border-radius: 36px; display: flex; flex-direction: column; justify-content: space-between; transition: transform .28s var(--ease), box-shadow .28s; }
 .portal:hover { transform: translateY(-4px); box-shadow: 0 38px 90px rgba(0,0,0,.28), inset 0 1px rgba(255,255,255,.2); }

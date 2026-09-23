@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "一桌·一屏",
+  "short_name": "一桌·一屏",
+  "description": "Tabletop & Screen · 我的桌游与电子游戏收藏",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#08090a",
+  "theme_color": "#08090a",
+  "prefer_related_applications": false,
+  "icons": [
+    {"src": "assets/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}
+  ],
+  "shortcuts": [
+    {"name": "一桌 · 桌游收藏", "url": "./tabletop.html"},
+    {"name": "一屏 · 电子游戏", "url": "./screen.html"}
+  ]
+}
