@@ -199,7 +199,7 @@ function bind() {
   $('#importInput').onchange=safe(async e=>{
     const file=e.target.files[0];if(!file)return;
     try{if(!editing&&!await unlock())return;const payload=await readBackupFile(file),summary=summarizeBackup(payload);
-      if(!await ask('恢复收藏备份',`<p>桌游 ${summary.games} 款 · 扩展 ${summary.expansions} 个 · 电子游戏 ${summary.screenGames} 款 · 图片 ${summary.images} 张</p><p>${payload.hasScreenData?'将替换一桌和一屏的收藏。':'这是旧版桌游备份，现有电子游戏及其封面将保留。'}恢复前将自动导出当前完整备份。</p>`,'恢复备份'))return;
+      if(!await ask('恢复收藏备份',`<p>桌游 ${summary.games} 款 · 扩展 ${summary.expansions} 个 · 电子游戏 ${summary.screenGames} 款 · 桌游局 ${summary.sessions} 场 · 图片 ${summary.images} 张</p><p>${payload.hasScreenData?'将替换一桌和一屏的收藏。':'这是旧版桌游备份，现有电子游戏及其封面将保留。'}${payload.hasSessionData?"桌游局记录也将被替换。":"此备份不含桌游局，现有桌游局将保留。"}恢复前将自动导出当前完整备份。</p>`,'恢复备份'))return;
       await exportNow('一桌一屏-恢复前自动备份');app=await restoreBackup(payload);editing=false;document.body.classList.remove('is-editing');openId=null;closeDrawers();options();render();toast('备份已恢复，编辑模式已锁定');
     }finally{e.target.value=''}
   });

@@ -1,7 +1,8 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v2';
+const CACHE = 'tabletop-screen-shell-v3';
 const FILES = [
   'index.html', 'tabletop.html', 'screen.html', 'css/styles.css',
+  'sessions.html', 'css/sessions.css', 'js/sessions.js', 'js/session-domain.js',
   'js/domain.js', 'js/screen-domain.js', 'js/storage.js', 'js/tabletop.js',
   'js/screen.js', 'js/card-size.js', 'js/pwa.js', 'manifest.webmanifest',
   'assets/brand-mark.svg', 'assets/favicon.svg', 'assets/FZZhuoYTJW_Te.TTF',

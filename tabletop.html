@@ -43,7 +43,7 @@
         <h1>一桌</h1>
         <p><span id="collectionCount">0</span> 件桌上藏品</p>
       </div>
-      <button id="addGameButton" class="primary-button edit-only" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>添加桌游</button>
+      <div class="nav-actions"><a class="secondary-button" href="sessions.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v15H4zM8 3v4M16 3v4M4 10h16M8 14h3"/></svg>桌游局 · 安排今日</a><button id="addGameButton" class="primary-button edit-only" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>添加桌游</button></div>
     </section>
 
     <section class="view-toolbar liquid-strong" aria-label="收藏视图控制">
@@ -83,7 +83,7 @@
       <button id="exportButton" class="primary-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 20h14"/></svg>导出完整备份</button>
       <label class="file-action secondary-button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21V9m-4 4 4-4 4 4M5 4h14"/></svg>选择备份恢复<input id="importInput" type="file" accept="application/json,.json"></label>
     </div>
-    <p class="drawer-note">备份包含一桌与一屏的收藏、图片及编辑密码。恢复前会自动下载当前备份；旧版仅桌游备份会保留现有电子游戏。不同浏览器配置的数据互不共享。</p>
+    <p class="drawer-note">备份包含一桌与一屏的收藏、图片、桌游局及编辑密码。恢复前会自动下载当前备份；旧版缺少桌游局或电子游戏的备份会保留对应现有数据。不同浏览器配置的数据互不共享。</p>
   </aside>
 
   <dialog id="pinDialog" class="app-dialog liquid-strong">

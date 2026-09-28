@@ -16,6 +16,7 @@
   ],
   "shortcuts": [
     {"name": "一桌 · 桌游收藏", "url": "./tabletop.html"},
-    {"name": "一屏 · 电子游戏", "url": "./screen.html"}
+    {"name": "一屏 · 电子游戏", "url": "./screen.html"},
+    {"name": "桌游局 · 今日安排", "url": "./sessions.html"}
   ]
 }

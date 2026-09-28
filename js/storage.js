@@ -1,7 +1,13 @@
 import { createDefaultState, makeId, normalizeBackup } from "./domain.js";
+import {validateSession, sessionItems, syncSessionPlays} from './session-domain.js';
 
 const DB_NAME = "tabletop-and-screen";
 const DB_VERSION = 1;
+const loadedPlays = new WeakMap();
+function rememberPlays(state) {
+  loadedPlays.set(state,new Map(state.games.map(game=>[game.id,game.plays])));
+  return state;
+}
 
 function openDb() {
   return new Promise((resolve, reject) => {
@@ -46,16 +52,20 @@ export async function loadState() {
   if (!state) {
     const fresh = createDefaultState();
     await saveState(fresh);
-    return fresh;
+    return rememberPlays(fresh);
   }
-  return normalizeBackup({ format: "tabletop-and-screen", version: 1, state, images: [] }).state;
+  return rememberPlays(normalizeBackup({ format: "tabletop-and-screen", version: 1, state, images: [] }).state);
 }
 
-export function mergeSavedState(current, state, scope = 'tabletop') {
+export function mergeSavedState(current, state, scope = 'tabletop', baselinePlays) {
   if (!current) return structuredClone(state);
   const next = structuredClone(current);
   const fields = scope === 'screen' ? ['screen'] : ['games', 'taxonomies', 'view'];
   for (const field of fields) next[field] = structuredClone(state[field]);
+  if (scope === 'tabletop') for (const game of next.games) {
+    const latest = current.games?.find(g=>g.id===game.id);
+    if (latest && (baselinePlays?.has(game.id) ? baselinePlays.get(game.id) === game.plays : latest.updatedAt > game.updatedAt)) game.plays = latest.plays;
+  }
   next.security = structuredClone(current.security?.pinHash ? current.security : state.security);
   next.meta = { ...current.meta, ...state.meta, lastBackupAt: [current.meta?.lastBackupAt, state.meta?.lastBackupAt].filter(Boolean).sort().at(-1) || null };
   return next;
@@ -63,10 +73,16 @@ export function mergeSavedState(current, state, scope = 'tabletop') {
 
 export async function saveState(state, scope = 'tabletop') {
   state.meta = { ...state.meta, updatedAt: new Date().toISOString() };
+  let saved;
   await transact("state", "readwrite", (store) => {
     const read = store.get('app');
-    read.onsuccess = () => store.put(mergeSavedState(read.result, state, scope), 'app');
+    read.onsuccess = () => {
+      saved=mergeSavedState(read.result, state, scope, loadedPlays.get(state));
+      store.put(saved, 'app');
+    };
   });
+  if(scope==='tabletop')for(const game of state.games)game.plays=saved.games.find(g=>g.id===game.id)?.plays ?? game.plays;
+  rememberPlays(state);
   return state;
 }
 
@@ -135,7 +151,8 @@ export function summarizeBackup(payload) {
     games: payload.state.games.length,
     expansions: payload.state.games.reduce((total, game) => total + (game.expansions?.length ?? 0), 0),
     images: payload.images.length,
-    screenGames: payload.state.screen?.games.length ?? 0
+    screenGames: payload.state.screen?.games.length ?? 0,
+    sessions: payload.state.sessions?.length ?? 0
   };
 }
 
@@ -184,6 +201,7 @@ export async function restoreBackup(payload) {
     normalized.state = preserved.state;
     imageRecords = preserved.images;
   }
+  if (!normalized.hasSessionData) normalized.state.sessions = structuredClone((await loadState()).sessions);
   const db = await openDb();
   await new Promise((resolve, reject) => {
     const transaction = db.transaction(["state", "images", "drafts"], "readwrite");
@@ -198,7 +216,7 @@ export async function restoreBackup(payload) {
     transaction.onerror = () => reject(transaction.error);
   });
   db.close();
-  return normalized.state;
+  return rememberPlays(normalized.state);
 }
 
 export function preserveScreenOnLegacyRestore(incoming, current, images, currentImages) {
@@ -213,4 +231,63 @@ export function preserveScreenOnLegacyRestore(incoming, current, images, current
     result.push({...record,id}); existing.add(id);
   }
   return {state, images:result};
+}
+
+// Read, check revision, and mutate the latest app in ONE transaction. An old
+// browser tab cannot silently overwrite a saved session or double-count plays.
+async function mutateApp(change) {
+  const db=await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction('state','readwrite'), store=tx.objectStore('state');
+    let result, failure;
+    const read=store.get('app');
+    read.onsuccess=()=>{
+      try {
+        const state=read.result || createDefaultState(); state.sessions ||= [];
+        result=change(state);state.meta={...state.meta,updatedAt:new Date().toISOString()};store.put(state,'app');
+      } catch(error) { failure=error;tx.abort(); }
+    };
+    tx.oncomplete=()=>{db.close();resolve(result);};
+    tx.onabort=tx.onerror=()=>{db.close();reject(failure || tx.error || Error('保存失败'));};
+  });
+}
+export function saveSession(session, expectedRevision=session.revision) {
+  const errors=validateSession(session);if(errors.length) return Promise.reject(Error(errors.join('；')));
+  return mutateApp(state=>{
+    const index=state.sessions.findIndex(s=>s.id===session.id), old=state.sessions[index];
+    if ((old?.revision||0)!==expectedRevision || (!old && expectedRevision>0)) throw Error('这条桌游局已在其他窗口修改或删除。请保留草稿并重新打开记录。');
+    // Synced entries must retain their receipts even when reordered or edited.
+    for(const item of old ? sessionItems(old) : []) if(item.synced>0) {
+      const next=sessionItems(session).find(i=>i.id===item.id && i.gameId===item.gameId);
+      if(!next || next.synced!==item.synced || next.actual<item.synced) throw Error('已同步的桌游不能移除，实玩局数不能少于已同步局数');
+    }
+    const next={...structuredClone(session),revision:expectedRevision+1,updatedAt:new Date().toISOString()};
+    if(index<0)state.sessions.push(next);else state.sessions[index]=next;
+    return next;
+  });
+}
+export function deleteSession(id, revision) {
+  return mutateApp(state=>{
+    const old=state.sessions.find(s=>s.id===id);
+    if(!old || old.revision!==revision) throw Error('记录已变化，请重新打开后操作');
+    state.sessions=state.sessions.filter(s=>s.id!==id);
+  });
+}
+export function syncSession(id, revision) {
+  return mutateApp(state=>{
+    const session=state.sessions.find(s=>s.id===id);
+    if(!session || session.revision!==revision) throw Error('记录已变化，请重新打开后同步');
+    const added=syncSessionPlays(state,id);
+    session.revision++;session.updatedAt=new Date().toISOString();
+    return {session:structuredClone(session),added};
+  });
+}
+export function setSessionPin(pinHash) {
+  return mutateApp(state=>{
+    if(state.security.pinHash && state.security.pinHash!==pinHash) throw Error('密码已在其他页面设置，请输入现有密码');
+    state.security.pinHash=pinHash;
+  });
+}
+export async function snapshotCover(id) {
+  const blob=await getImage(id);return blob ? blobToDataUrl(blob) : '';
 }

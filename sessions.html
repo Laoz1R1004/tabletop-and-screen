@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090a"><title>桌游局 · 一桌一屏</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/sessions.css">
+  <script type="module" src="js/pwa.js"></script>
+</head>
+<body class="sessions-page">
+  <div class="ambient ambient--tabletop" aria-hidden="true"></div>
+  <a class="sr-only skip-session" href="#sessionDetail">跳到桌游局内容</a>
+  <header class="app-nav liquid-strong">
+    <a class="brand-lockup" href="index.html"><img class="brand-mark" src="assets/brand-mark.svg" width="40" height="40" alt=""><span><b>一桌·一屏</b><small>Tabletop &amp; Screen</small></span></a>
+    <nav class="section-nav" aria-label="收藏版块"><a href="tabletop.html">一桌</a><a href="screen.html">一屏</a><a href="sessions.html" class="is-active" aria-current="page">桌游局</a></nav>
+    <div class="nav-actions"><button class="icon-text-button" data-action="backup">导出备份</button><button class="secondary-button" id="sessionMode" data-action="mode">进入编辑</button></div>
+  </header>
+  <main class="sessions-shell">
+    <section class="sessions-intro"><div><p class="session-eyebrow">TABLETOP SESSIONS</p><h1>把好游戏，排成好时光。</h1><p class="session-muted">从热场到尽兴，留下每一桌的安排与回响。</p></div><button class="primary-button" data-action="new">＋ 发起今日桌游局</button></section>
+    <div class="sessions-workspace">
+      <aside class="session-history liquid-strong" aria-label="桌游局记录"><div class="history-heading"><h2>桌边日历</h2><span id="sessionCount">0 场</span></div><p class="session-muted">按日期，从新到旧</p><div id="sessionList"></div><button class="ghost-button" id="resumeDraft" data-action="resume" hidden>恢复未保存的草稿</button></aside>
+      <section id="sessionDetail" class="session-detail" tabindex="-1" aria-label="桌游局详情"></section>
+    </div>
+  </main>
+  <dialog id="sessionPinDialog" class="app-dialog liquid-strong">
+    <form id="sessionPinForm"><div class="dialog-head"><h2 id="sessionPinTitle">进入编辑</h2><button type="button" class="square-button" data-close="sessionPinDialog" aria-label="关闭密码窗口">×</button></div>
+      <p class="session-muted">沿用一桌·一屏的 6 位数字密码。密码用于防误改，数据仍保存在当前浏览器。</p>
+      <label class="session-field"><span>6 位密码</span><input name="pin" type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autocomplete="off"></label>
+      <label class="session-field" id="sessionPinConfirm" hidden><span>再次输入</span><input name="confirm" type="password" inputmode="numeric" maxlength="6" autocomplete="off"></label>
+      <p id="sessionPinError" role="alert"></p><button class="primary-button" type="submit">确认并进入</button>
+    </form>
+  </dialog>
+  <dialog id="sessionConfirm" class="app-dialog liquid-strong"><form method="dialog"><h2 id="sessionConfirmTitle">请确认</h2><p id="sessionConfirmText"></p><div class="dialog-actions"><button class="ghost-button" value="cancel">取消</button><button class="primary-button" value="yes">确认</button></div></form></dialog>
+  <dialog id="gamePicker" class="session-picker liquid-strong" aria-labelledby="pickerTitle">
+    <div class="dialog-head"><div><p class="session-eyebrow">FROM YOUR COLLECTION</p><h2 id="pickerTitle">为这一阶段选桌游</h2></div><button class="square-button" data-close="gamePicker" aria-label="关闭桌游选择">×</button></div>
+    <div class="picker-filters">
+      <label class="session-field"><span>搜索</span><input type="search" id="pickerSearch" placeholder="名称、版本或主题"></label>
+      <label class="session-field"><span>设计流派</span><select id="pickerSchool"><option value="">全部流派</option></select></label>
+      <label class="session-field"><span>重度</span><select id="pickerWeight"><option value="">全部重度</option><option value="0">0–2 毛线</option><option value="2">2–3 轻策</option><option value="3">3–4 中策</option><option value="4">4–5 重策</option></select></label>
+      <label class="picker-check"><input type="checkbox" id="pickerOwned">只看已购入</label><label class="picker-check"><input type="checkbox" id="pickerFits">适合本场人数</label>
+    </div>
+    <p class="session-muted" id="pickerHint">同一桌游只添加一次，可设置多局。</p>
+    <div id="pickerResults" class="picker-results"></div>
+    <div class="picker-footer"><span class="session-muted">封面与信息会留存为本场快照。</span><button class="primary-button" data-close="gamePicker">选好了</button></div>
+  </dialog>
+  <div id="sessionToast" class="toast-region" role="status" aria-live="polite"></div>
+  <div class="wide-window-notice" role="status">请使用宽度至少 1024px 的桌面浏览器打开。</div>
+  <script type="module" src="js/sessions.js"></script>
+</body>
+</html>

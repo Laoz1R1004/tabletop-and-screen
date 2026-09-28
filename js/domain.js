@@ -1,4 +1,5 @@
 import { defaultScreen } from './screen-domain.js';
+import { validateSession } from './session-domain.js';
 
 const DEFAULT_TAXONOMIES = {
   itemType: ["桌游", "收藏类"],
@@ -24,6 +25,7 @@ export function formatPlayCount(value) {
 export function createDefaultState() {
   return {
     games: [],
+    sessions: [],
     screen: defaultScreen(),
     taxonomies: structuredClone(DEFAULT_TAXONOMIES),
     view: {
@@ -167,11 +169,13 @@ export function searchGames(games, query) {
 export function normalizeBackup(input) {
   if (input?.format !== "tabletop-and-screen" || input.version !== 1 || !input.state) throw new Error("无法识别的备份文件");
   const defaults = createDefaultState();
+  if (Object.hasOwn(input.state, 'sessions') && (!Array.isArray(input.state.sessions) || input.state.sessions.some(s => validateSession(s).length) || new Set(input.state.sessions.map(s=>s.id)).size !== input.state.sessions.length)) throw new Error('备份中的桌游局数据无效');
   return {
     format: input.format,
     version: 1,
     exportedAt: input.exportedAt ?? new Date().toISOString(),
     hasScreenData: input.hasScreenData ?? Object.hasOwn(input.state, 'screen'),
+    hasSessionData: input.hasSessionData ?? Object.hasOwn(input.state, 'sessions'),
     state: {
       ...defaults,
       ...input.state,
