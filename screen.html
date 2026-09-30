@@ -34,9 +34,14 @@
     <section class="collection-intro">
       <div>
         <h1>一屏</h1>
-        <p><span id="collectionCount">0</span> 件电子游戏</p>
+        <p id="screenCountLabel"><span id="collectionCount">0</span> 件电子游戏</p>
+      </div>
+      <div class="screen-view-switch" role="tablist" aria-label="一屏视图">
+        <button id="collectionViewButton" class="is-active" type="button" role="tab" aria-selected="true">我的收藏</button>
+        <button id="wishlistViewButton" type="button" role="tab" aria-selected="false">游戏愿望单</button>
       </div>
       <button id="addGameButton" class="primary-button edit-only" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>添加游戏</button>
+      <button id="addWishlistButton" class="primary-button edit-only" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>添加愿望</button>
     </section>
 
     <section class="view-toolbar liquid-strong" aria-label="收藏视图控制">

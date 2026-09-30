@@ -5,8 +5,25 @@ export const blank = v => v === null || v === undefined || v === '';
 export const themeTags = text => [...new Set(text.split(/[，,]/).map(v => v.trim()).filter(Boolean))];
 
 export function defaultScreen() {
-  return { games: [], taxonomies: { types: ['策略类','动作类','解谜类','恐怖类','经营类','剧情类','聚会类','模拟器','体育类','肉鸽类','沙盒类','射击类','休闲类','RPG类','战略类'], themes: [] },
-    view: { groupBy: 'types', sortBy: 'rating', sortDirection: 'asc', filters: [], search: '', collapsedGroups: [] } };
+  return { games: [], wishlist: [], taxonomies: { types: ['策略类','动作类','解谜类','恐怖类','经营类','剧情类','聚会类','模拟器','体育类','肉鸽类','沙盒类','射击类','休闲类','RPG类','战略类'], themes: [] },
+    view: { mode: 'collection', groupBy: 'types', sortBy: 'rating', sortDirection: 'asc', filters: [], search: '', collapsedGroups: [], wishlistSort: 'lowestPrice', wishlistDirection: 'asc' } };
+}
+export function emptyWishlistItem() { const now = new Date().toISOString(); return { id: `wish-${crypto.randomUUID()}`, name: '', lowestPrice: null, createdAt: now, updatedAt: now }; }
+export function normalizeLowestPrice(value) { return blank(value) ? null : Number(Number(value).toFixed(2)); }
+export function validateWishlistItem(item) {
+  const errors = {};
+  if (!item?.name?.trim()) errors.name = '请输入游戏名称';
+  if (!blank(item?.lowestPrice) && (!Number.isFinite(Number(item.lowestPrice)) || Number(item.lowestPrice) < 0)) errors.lowestPrice = '史低价格应为非负数字';
+  return errors;
+}
+export function sortWishlist(items, field = 'lowestPrice', direction = 'asc') {
+  const name = (a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hans-CN', { numeric: true });
+  return [...items].sort((a, b) => {
+    const av = field === 'name' ? a.name : a.lowestPrice, bv = field === 'name' ? b.name : b.lowestPrice;
+    if (blank(av) || blank(bv)) return blank(av) === blank(bv) ? name(a, b) : blank(av) ? 1 : -1;
+    const diff = field === 'name' ? name(a, b) : Number(av) - Number(bv);
+    return diff * (direction === 'desc' ? -1 : 1) || name(a, b);
+  });
 }
 export function emptyScreenGame() {
   const now = new Date().toISOString();

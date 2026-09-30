@@ -1,5 +1,5 @@
 import {applyFilters, formatDecimal, hashPin} from './domain.js';
-import {RATINGS, PLATFORMS, PROGRESS, blank, themeTags, emptyScreenGame, normalizeHours, formatHours, validateScreenGame, sortScreenGames, groupScreenGames, screenGroupKeys, searchScreenGames} from './screen-domain.js';
+import {RATINGS, PLATFORMS, PROGRESS, blank, themeTags, emptyScreenGame, emptyWishlistItem, normalizeHours, normalizeLowestPrice, formatHours, validateScreenGame, validateWishlistItem, sortScreenGames, sortWishlist, groupScreenGames, screenGroupKeys, searchScreenGames} from './screen-domain.js';
 import {loadState, saveState, loadDraft, saveDraft, clearDraft, putImage, getImage, createBackupPayload, downloadBackup, readBackupFile, restoreBackup, summarizeBackup} from './storage.js';
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -7,16 +7,24 @@ const esc = (v='') => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 const GROUP = {types:'类型',themes:'主题',platform:'主平台',rating:'评级',progress:'进度',developer:'开发商',owned:'购入状态'};
 const SORT = {rating:'评级 → 名称',name:'名称',price:'购入价',hours:'游戏时长',createdAt:'创建时间',updatedAt:'修改时间'};
 const FILTER = {...GROUP,name:'名称',price:'购入价',hours:'游戏时长'};
-let app, editing=false, openId=null, openGroup=null, draft=null, isNew=false, dirty=false, timer, taxTab='types', tempFilters=[], urls=[], imageBusy=false, renderVersion=0;
+let app, editing=false, openId=null, openGroup=null, draft=null, isNew=false, dirty=false, timer, taxTab='types', tempFilters=[], urls=[], imageBusy=false, renderVersion=0, wishlistDraft=null;
 const data = () => app.screen;
 const persist = () => saveState(app,'screen');
 const svg = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${({plus:'<path d="M12 5v14M5 12h14"/>',x:'<path d="m6 6 12 12M18 6 6 18"/>',image:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m4 18 5-6 4 4 3-3 4 5"/>',chev:'<path d="m7 9 5 5 5-5"/>',edit:'<path d="m4 20 4-1L20 7l-3-3L5 16Z"/>',trash:'<path d="M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7"/>'})[name] || ''}</svg>`;
 function toast(message) { const n=document.createElement('div');n.className='toast';n.textContent=message;$('#toastRegion').append(n);setTimeout(()=>n.remove(),5000); }
 const safe = fn => async e => {try {await fn(e)} catch(error) {console.error(error);toast(error.message || '操作失败，请重试');}};
-function guarded() {if(draft){toast('请先保存或取消当前编辑');return true}return false}
+function guarded() {if(draft||wishlistDraft){toast('请先保存或取消当前编辑');return true}return false}
 function badge(g, large=false) {return `<span class="grade-badge ${large?'grade-badge--large':''} grade-${g.rating ? RATINGS.indexOf(g.rating) : 'empty'}" aria-label="${g.rating?`个人评级 ${esc(g.rating)} 级`:'未评级'}" title="${g.rating?`${esc(g.rating)} 级`:'未评级'}">${esc(g.rating || '—')}</span>`}
 function cover(g, original=false) {return `<div class="cover-frame"><div class="cover-frame__blur" data-cover="${esc(g.coverId)}" data-bg></div>${g.coverId?`<img class="cover-frame__image" data-cover="${esc(g.coverId)}" data-size="${original?'original':'thumbnail'}" alt="${esc(g.name)}封面">`:`<div class="cover-placeholder">${svg('image')}</div>`}</div>`}
 function tags(items, extra='') {return items.map(t=>`<span class="game-tag ${extra}" title="${esc(t)}">${esc(t)}</span>`).join('')}
+function formatWishlistPrice(value) { return blank(value) ? '待查' : `¥ ${Number(value).toFixed(2)}`; }
+function wishlistEditor(item) { return `<form class="wishlist-row wishlist-row--editing" id="wishlistEditor"><label><span class="sr-only">游戏名称</span><input name="name" value="${esc(item.name)}" placeholder="游戏名称" required maxlength="120"></label><label><span class="sr-only">史低价格</span><input name="lowestPrice" type="number" min="0" step="0.01" value="${blank(item.lowestPrice)?'':Number(item.lowestPrice).toFixed(2)}" placeholder="史低价格"></label><div class="wishlist-row__actions"><button class="primary-button" type="submit">保存</button><button class="ghost-button" type="button" data-act="wish-cancel">取消</button></div></form>`; }
+function wishlistRow(item) { return wishlistDraft?.id===item.id ? wishlistEditor(item) : `<article class="wishlist-row"><div class="wishlist-row__name"><strong>${esc(item.name)}</strong></div><span class="wishlist-row__price ${blank(item.lowestPrice)?'is-empty':''}">${formatWishlistPrice(item.lowestPrice)}</span><div class="wishlist-row__actions edit-only"><button class="square-button" data-act="wish-edit" data-id="${esc(item.id)}" aria-label="编辑${esc(item.name)}">${svg('edit')}</button><button class="square-button" data-act="wish-delete" data-id="${esc(item.id)}" aria-label="删除${esc(item.name)}">${svg('trash')}</button></div></article>`; }
+function wishlistFiltered() { const q=data().view.search.trim().toLocaleLowerCase(); const items=data().wishlist.filter(item=>!q||item.name.toLocaleLowerCase().includes(q)); return sortWishlist(items,data().view.wishlistSort,data().view.wishlistDirection); }
+function renderWishlist() { const items=wishlistFiltered(); const display=wishlistDraft?[wishlistDraft,...items.filter(item=>item.id!==wishlistDraft.id)]:items; $('#collectionCount').textContent=data().wishlist.length; $('#screenCountLabel').innerHTML=`<span id="collectionCount">${data().wishlist.length}</span> 款待购游戏`; $('#collection').innerHTML=`<section class="wishlist-panel liquid-strong"><div class="wishlist-head"><div><p class="screen-eyebrow">WISHLIST</p><h2>下一款，等史低。</h2><p>只记录正在观望的游戏和你见过的最低价格。</p></div><div class="wishlist-tools"><label class="compact-field"><span>排序</span><select id="wishlistSort"><option value="lowestPrice">史低价格</option><option value="name">游戏名称</option></select></label><button id="wishlistDirection" class="square-button" type="button" aria-label="切换愿望单排序方向">${svg('chev')}</button></div></div><div class="wishlist-list">${display.length?display.map(wishlistRow).join(''):`<div class="wishlist-empty"><h3>${data().wishlist.length?'没有匹配的愿望':'还没有想买的游戏'}</h3><p>${data().wishlist.length?'试试其他名称关键词。':'把正在观望的游戏放在这里，等史低出现。'}</p><button class="primary-button edit-only" data-act="wish-new" ${editing?'':'hidden'}>添加第一款愿望</button></div>`}</div></section>`; $('#wishlistSort').value=data().view.wishlistSort; $('#wishlistDirection').style.transform=data().view.wishlistDirection==='asc'?'':'rotate(180deg)'; hydrateWishlistControls(); }
+function hydrateWishlistControls() { $('#wishlistSort')?.addEventListener('change',safe(async e=>{data().view.wishlistSort=e.target.value;await persist();renderWishlist()})); $('#wishlistDirection')?.addEventListener('click',safe(async()=>{data().view.wishlistDirection=data().view.wishlistDirection==='asc'?'desc':'asc';await persist();renderWishlist()})); }
+function startWishlistNew(){if(guarded())return;if(!editing)return unlock().then(ok=>{if(ok)startWishlistNew()});wishlistDraft=emptyWishlistItem();renderWishlist();requestAnimationFrame(()=>$('#wishlistEditor input[name="name"]')?.focus());}
+async function saveWishlist(){if(!wishlistDraft)return;const form=$('#wishlistEditor'),values=new FormData(form);wishlistDraft.name=String(values.get('name')||'').trim();wishlistDraft.lowestPrice=normalizeLowestPrice(values.get('lowestPrice'));const errors=validateWishlistItem(wishlistDraft);if(Object.keys(errors).length)return toast(Object.values(errors).join('；'));const duplicate=data().wishlist.some(item=>item.id!==wishlistDraft.id&&item.name.trim().toLocaleLowerCase()===wishlistDraft.name.toLocaleLowerCase());if(duplicate)return toast('愿望单中已有同名游戏');wishlistDraft.updatedAt=new Date().toISOString();const index=data().wishlist.findIndex(item=>item.id===wishlistDraft.id);if(index<0)data().wishlist.push(structuredClone(wishlistDraft));else data().wishlist[index]=structuredClone(wishlistDraft);await persist();wishlistDraft=null;render();toast('愿望已保存');}
 function card(g,key) {
   const length=[...g.name].length;
   return `<article class="game-card screen-card"><button type="button" class="game-card__button" data-act="open" data-id="${esc(g.id)}" data-group="${esc(key)}" aria-expanded="${openId===g.id&&openGroup===key}">${cover(g)}<div class="game-card__body"><h3 class="game-card__title ${length>24?'is-very-long':length>14?'is-long':''}" title="${esc(g.name)}">${esc(g.name)}</h3><div class="screen-card__summary">${badge(g)}<span class="progress-label"><span class="progress-dot progress-${PROGRESS.indexOf(g.progress)}" aria-hidden="true"></span>${esc(g.progress)}</span></div><div class="game-tags game-tags--card screen-card__tags">${tags(g.types,'game-tag--school')}${tags(g.themes.slice(0,2))}${g.themes.length>2?`<span class="game-tag theme-overflow" aria-label="另有 ${g.themes.length-2} 个主题">+${g.themes.length-2}</span>`:''}</div></div></button></article>`;
@@ -51,7 +59,11 @@ async function hydrate(version) {
 function render() {
   urls.forEach(URL.revokeObjectURL);urls=[];const version=++renderVersion;
   $('#collectionCount').textContent=data().games.length;
-  $('#addGameButton').hidden=$('#categoryButton').hidden=!editing;
+  $('#addGameButton').hidden=$('#categoryButton').hidden=!editing || data().view.mode==='wishlist';
+  $('#addWishlistButton').hidden=!editing || data().view.mode!=='wishlist';
+  $('#collectionViewButton').classList.toggle('is-active',data().view.mode!=='wishlist');$('#wishlistViewButton').classList.toggle('is-active',data().view.mode==='wishlist');$('#collectionViewButton').ariaSelected=String(data().view.mode!=='wishlist');$('#wishlistViewButton').ariaSelected=String(data().view.mode==='wishlist');
+  if(data().view.mode==='wishlist'){ $('.view-toolbar').hidden=false; $('#groupSelect').closest('.compact-field').hidden=true; $('#sortSelect').closest('.compact-field').hidden=true; $('#sortDirectionButton').hidden=true; $('#filterButton').hidden=true; $('#groupsButton').hidden=true; $('#cardSizeSelect').closest('.compact-field').hidden=true; $('#categoryButton').hidden=true; $('#collection').classList.add('is-wishlist'); renderWishlist(); return; }
+  $('.view-toolbar').hidden=false; $('#groupSelect').closest('.compact-field').hidden=false; $('#sortSelect').closest('.compact-field').hidden=false; $('#sortDirectionButton').hidden=false; $('#filterButton').hidden=false; $('#groupsButton').hidden=false; $('#cardSizeSelect').closest('.compact-field').hidden=false; $('#collection').classList.remove('is-wishlist');
   $('#editModeButton').classList.toggle('is-active',editing);$('#viewModeButton').classList.toggle('is-active',!editing);
   $('#filterCount').hidden=!data().view.filters.length;$('#filterCount').textContent=data().view.filters.length;
   $('#activeFilters').innerHTML=data().view.filters.map((f,i)=>`<span class="filter-chip">${FILTER[f.field]} · ${esc(['empty','filled'].includes(f.operator)?f.operator==='empty'?'未填写':'已填写':Array.isArray(f.value)?f.value.join('、'):f.value)}<button data-act="remove-filter" data-index="${i}" aria-label="移除${FILTER[f.field]}筛选">${svg('x')}</button></span>`).join('');
@@ -143,6 +155,10 @@ async function click(e) {
   const b=e.target.closest('[data-act]');if(!b)return;e.preventDefault();const action=b.dataset.act;
   if(action==='choice') {readForm();const f=b.dataset.field,v=b.dataset.value;if(f==='rating')draft.rating=draft.rating===v?'':v;else{const values=draft[f];if(values.includes(v))draft[f]=values.filter(x=>x!==v);else{if(f==='types'&&values.length>=2)return toast('类型最多选择 2 个');values.push(v)}}queueDraft();render();return}
   if(action==='cancel')return cancel();
+  if(action==='wish-new')return startWishlistNew();
+  if(action==='wish-edit'){if(!editing)return;wishlistDraft=structuredClone(data().wishlist.find(item=>item.id===b.dataset.id));return renderWishlist();}
+  if(action==='wish-cancel'){wishlistDraft=null;return renderWishlist();}
+  if(action==='wish-delete'){if(!editing)return;const item=data().wishlist.find(v=>v.id===b.dataset.id);if(!item||!await ask('删除愿望',`<p>删除“${esc(item.name)}”？</p>`,'删除愿望'))return;data().wishlist=data().wishlist.filter(v=>v.id!==item.id);await persist();return renderWishlist();}
   if(action==='delete') {
     if(!await ask('删除游戏',`<p>删除“${esc(draft.name)}”？封面仍保留在完整备份中。</p>`,'删除游戏'))return;
     clearTimeout(timer);await clearDraft(draftKey());data().games=data().games.filter(g=>g.id!==draft.id);await persist();draft=null;dirty=false;openId=null;render();return toast('游戏已删除');
@@ -174,14 +190,16 @@ function bind() {
   document.addEventListener('click',safe(click));
   document.addEventListener('input',e=>{if(e.target.closest('#gameEditor')){readForm();queueDraft()}if(e.target.matches('[data-filter-value]'))tempFilters[Number(e.target.closest('[data-filter]').dataset.filter)].value=e.target.value});
   document.addEventListener('change',safe(async e=>{if(e.target.id==='coverInput'&&e.target.files[0])await upload(e.target.files[0]);if(e.target.closest('#gameEditor')){readForm();queueDraft()}const row=e.target.closest('[data-filter]');if(row){const i=Number(row.dataset.filter);if(e.target.matches('[data-filter-field]'))tempFilters[i]=defaultFilter(e.target.value);if(e.target.matches('[data-filter-op]')){tempFilters[i].operator=e.target.value;tempFilters[i].value=filterValues(tempFilters[i].field)?[]:''}filterRows()}}));
-  document.addEventListener('submit',safe(async e=>{if(e.target.id==='gameEditor'){e.preventDefault();await saveGame()}}));
+  document.addEventListener('submit',safe(async e=>{if(e.target.id==='gameEditor'){e.preventDefault();await saveGame()}if(e.target.id==='wishlistEditor'){e.preventDefault();await saveWishlist()}}));
   document.addEventListener('dragover',e=>{if(e.target.closest('.image-drop'))e.preventDefault()});
   document.addEventListener('drop',safe(async e=>{if(e.target.closest('.image-drop')){e.preventDefault();if(e.dataTransfer.files[0])await upload(e.dataTransfer.files[0])}}));
   document.addEventListener('paste',safe(async e=>{if(document.activeElement.closest('.image-drop')){const file=[...e.clipboardData.files].find(f=>f.type.startsWith('image/'));if(file){e.preventDefault();await upload(file)}}}));
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawers();if((e.key==='Enter'||e.key===' ')&&e.target.matches('.image-drop')){e.preventDefault();$('#coverInput').click()}});
   window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
-  $('#addGameButton').onclick=safe(startNew);$('#editModeButton').onclick=safe(async()=>{if(!editing)await unlock()});
+  $('#addGameButton').onclick=safe(startNew);$('#addWishlistButton').onclick=safe(startWishlistNew);$('#editModeButton').onclick=safe(async()=>{if(!editing)await unlock()});
   $('#viewModeButton').onclick=()=>{if(guarded())return;editing=false;document.body.classList.remove('is-editing');render()};
+  $('#collectionViewButton').onclick=safe(async()=>{if(guarded())return;data().view.mode='collection';wishlistDraft=null;await persist();render()});
+  $('#wishlistViewButton').onclick=safe(async()=>{if(guarded())return;data().view.mode='wishlist';openId=null;wishlistDraft=null;await persist();render()});
   $('#pinForm').onsubmit=safe(async e=>{
     if(e.submitter?.value==='cancel')return;e.preventDefault();
     try{const pin=$('#pinInput').value,hash=await hashPin(pin);if($('#pinDialog').dataset.setup==='true'){if(pin!==$('#pinConfirmInput').value)throw Error('两次输入的密码不一致');app.security.pinHash=hash;await persist()}else if(hash!==app.security.pinHash)throw Error('密码不正确');editing=true;document.body.classList.add('is-editing');$('#pinDialog').close('ok');options();render()}catch(error){$('#pinError').textContent=error.message}
@@ -199,7 +217,7 @@ function bind() {
   $('#importInput').onchange=safe(async e=>{
     const file=e.target.files[0];if(!file)return;
     try{if(!editing&&!await unlock())return;const payload=await readBackupFile(file),summary=summarizeBackup(payload);
-      if(!await ask('恢复收藏备份',`<p>桌游 ${summary.games} 款 · 扩展 ${summary.expansions} 个 · 电子游戏 ${summary.screenGames} 款 · 桌游局 ${summary.sessions} 场 · 图片 ${summary.images} 张</p><p>${payload.hasScreenData?'将替换一桌和一屏的收藏。':'这是旧版桌游备份，现有电子游戏及其封面将保留。'}${payload.hasSessionData?"桌游局记录也将被替换。":"此备份不含桌游局，现有桌游局将保留。"}恢复前将自动导出当前完整备份。</p>`,'恢复备份'))return;
+      if(!await ask('恢复收藏备份',`<p>桌游 ${summary.games} 款 · 扩展 ${summary.expansions} 个 · 电子游戏 ${summary.screenGames} 款 · 愿望单 ${summary.wishlist} 款 · 桌游局 ${summary.sessions} 场 · 图片 ${summary.images} 张</p><p>${payload.hasScreenData?'将替换一桌和一屏的收藏。':'这是旧版桌游备份，现有电子游戏及其封面将保留。'}${payload.hasSessionData?"桌游局记录也将被替换。":"此备份不含桌游局，现有桌游局将保留。"}恢复前将自动导出当前完整备份。</p>`,'恢复备份'))return;
       await exportNow('一桌一屏-恢复前自动备份');app=await restoreBackup(payload);editing=false;document.body.classList.remove('is-editing');openId=null;closeDrawers();options();render();toast('备份已恢复，编辑模式已锁定');
     }finally{e.target.value=''}
   });

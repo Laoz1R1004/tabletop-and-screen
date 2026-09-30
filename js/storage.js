@@ -152,6 +152,7 @@ export function summarizeBackup(payload) {
     expansions: payload.state.games.reduce((total, game) => total + (game.expansions?.length ?? 0), 0),
     images: payload.images.length,
     screenGames: payload.state.screen?.games.length ?? 0,
+    wishlist: payload.state.screen?.wishlist?.length ?? 0,
     sessions: payload.state.sessions?.length ?? 0
   };
 }

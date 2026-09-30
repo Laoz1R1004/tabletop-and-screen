@@ -180,7 +180,7 @@ export function normalizeBackup(input) {
       ...defaults,
       ...input.state,
       games: input.state.games ?? [],
-      screen: { ...defaults.screen, ...input.state.screen, taxonomies: { ...defaults.screen.taxonomies, ...input.state.screen?.taxonomies }, view: { ...defaults.screen.view, ...input.state.screen?.view } },
+      screen: { ...defaults.screen, ...input.state.screen, wishlist: Array.isArray(input.state.screen?.wishlist) ? input.state.screen.wishlist : [], taxonomies: { ...defaults.screen.taxonomies, ...input.state.screen?.taxonomies }, view: { ...defaults.screen.view, ...input.state.screen?.view } },
       taxonomies: { ...defaults.taxonomies, ...input.state.taxonomies },
       view: { ...defaults.view, ...input.state.view },
       security: { ...defaults.security, ...input.state.security },
