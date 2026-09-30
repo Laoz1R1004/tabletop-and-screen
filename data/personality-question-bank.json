@@ -1,0 +1,118 @@
+{
+  "format": "tabletop-personality-question-bank",
+  "version": 1,
+  "language": "zh-CN",
+  "title": "一桌·一屏桌游人格测试题库",
+  "description": "用于生成桌游偏好主人格与辅人格的正式题库。题目顺序由每次测试在运行时重新随机。",
+  "answerScale": [
+    { "value": 1, "label": "非常不认同", "score": -2 },
+    { "value": 2, "label": "不认同", "score": -1 },
+    { "value": 3, "label": "中立", "score": 0 },
+    { "value": 4, "label": "认同", "score": 1 },
+    { "value": 5, "label": "非常认同", "score": 2 }
+  ],
+  "dimensions": {
+    "RS": { "name": "变动型 / 构筑型", "left": { "code": "R", "name": "变动型" }, "right": { "code": "S", "name": "构筑型" } },
+    "LH": { "name": "轻松型 / 深度型", "left": { "code": "L", "name": "轻松型" }, "right": { "code": "H", "name": "深度型" } },
+    "CA": { "name": "对抗型 / 氛围型", "left": { "code": "C", "name": "对抗型" }, "right": { "code": "A", "name": "氛围型" } },
+    "GP": { "name": "小聚型 / 派对型", "left": { "code": "G", "name": "小聚型" }, "right": { "code": "P", "name": "派对型" } },
+    "CD": { "name": "收藏型 / 实干型", "left": { "code": "C", "name": "收藏型" }, "right": { "code": "D", "name": "实干型" } },
+    "OF": { "name": "组织者 / 参与者", "left": { "code": "O", "name": "组织者" }, "right": { "code": "F", "name": "参与者" } }
+  },
+  "scoring": {
+    "baseScoreByAnswer": { "1": -2, "2": -1, "3": 0, "4": 1, "5": 2 },
+    "weights": { "dedicated": 1.2, "crossPrimary": 1.0, "crossSecondary": 0.7, "generalOne": 0.6, "generalTwo": 0.45, "generalThree": 0.35, "auxDedicated": 1.2, "auxCrossPrimary": 1.0, "auxCrossSecondary": 0.7 },
+    "formula": "dimensionPercentage = 50 + 50 * (weightedRawScore / theoreticalMaximumAbsoluteScore)",
+    "codeRule": "percentage < 50 uses the left code; percentage >= 50 uses the right code",
+    "balanceRange": { "min": 47, "max": 53, "inclusive": true, "enabledFor": ["RS", "LH", "CA", "GP"] },
+    "extremeRange": { "leftMax": 5, "rightMin": 95, "inclusive": true },
+    "linkageRange": { "lowMax": 10, "highMin": 90, "inclusive": true },
+    "maxLinkageLabels": 2
+  },
+  "labels": {
+    "singleDimension": {
+      "R": "骰运暴徒", "S": "算盘筑城师", "L": "轻装闪击客", "H": "规则深潜者",
+      "C": "胜负猎手", "A": "全桌点火王", "G": "熟人巢穴王", "P": "人群引爆者",
+      "Collector": "藏品囤王", "Doer": "开箱实战派", "Organizer": "组局总司令", "Follower": "随局冲锋手"
+    },
+    "balance": { "RS": "随机驯兽师", "LH": "规则变形者", "CA": "胜负调停官", "GP": "人群变色龙" },
+    "linkage": [
+      { "id": "R-P", "dimensions": ["RS", "GP"], "label": "派对爆破手", "condition": "RS <= 10 and GP >= 90" },
+      { "id": "R-C", "dimensions": ["RS", "CA"], "label": "翻盘猎手", "condition": "RS <= 10 and CA <= 10" },
+      { "id": "R-A", "dimensions": ["RS", "CA"], "label": "混沌剧场导演", "condition": "RS <= 10 and CA >= 90" },
+      { "id": "S-C", "dimensions": ["RS", "CA"], "label": "精算压制者", "condition": "RS >= 90 and CA <= 10" },
+      { "id": "C-G", "dimensions": ["CA", "GP"], "label": "熟人修罗场", "condition": "CA <= 10 and GP <= 10" },
+      { "id": "A-P", "dimensions": ["CA", "GP"], "label": "全场社交引擎", "condition": "CA >= 90 and GP >= 90" }
+    ]
+  },
+  "randomization": {
+    "shuffleAllQuestions": true,
+    "questionCount": 48,
+    "seedPerAttempt": true,
+    "persistOrderForResume": true,
+    "hiddenDimensionMetadata": true,
+    "avoidThreeSameDimensionInARow": true,
+    "preferTwoQuestionSpacingForSameDimension": true
+  },
+  "questionCounts": { "mainDedicated": 20, "mainCross": 12, "mainGeneral": 10, "auxDedicated": 4, "auxCross": 2, "total": 48 },
+  "questions": [
+    { "id": "M-R-01", "kind": "dedicated", "text": "我喜欢骰子或抽牌让局势在关键时刻出现意外。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-R-02", "kind": "dedicated", "text": "一局游戏因为突发事件彻底改道，会让我更兴奋。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-R-03", "kind": "dedicated", "text": "我宁愿每一步都能精确计算，也不愿把关键结果交给运气。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 1.2, "polarity": -1 }] },
+
+    { "id": "M-S-01", "kind": "dedicated", "text": "我喜欢稳定的资源系统，因为它能让我逐步搭建自己的优势。", "effects": [{ "dimension": "RS", "pole": "S", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-S-02", "kind": "dedicated", "text": "我更希望胜负主要由选择和规划决定，而不是由运气决定。", "effects": [{ "dimension": "RS", "pole": "S", "weight": 1.2, "polarity": 1 }] },
+
+    { "id": "M-L-01", "kind": "dedicated", "text": "我喜欢规则容易解释、拿起来就能玩的游戏。", "effects": [{ "dimension": "LH", "pole": "L", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-L-02", "kind": "dedicated", "text": "我更喜欢一局节奏明快、很快就能看到结果的游戏。", "effects": [{ "dimension": "LH", "pole": "L", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-L-03", "kind": "dedicated", "text": "如果一局游戏需要投入很长时间，我通常会先犹豫。", "effects": [{ "dimension": "LH", "pole": "L", "weight": 1.2, "polarity": 1 }] },
+
+    { "id": "M-H-01", "kind": "dedicated", "text": "我愿意学习多层次规则，只要它们能提供长期策略空间。", "effects": [{ "dimension": "LH", "pole": "H", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-H-02", "kind": "dedicated", "text": "我喜欢一局游戏需要较长时间，才能形成完整体验。", "effects": [{ "dimension": "LH", "pole": "H", "weight": 1.2, "polarity": 1 }] },
+
+    { "id": "M-C-01", "kind": "dedicated", "text": "我喜欢算分、卡位和争夺资源，并把它们转化为胜势。", "effects": [{ "dimension": "CA", "pole": "C", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-C-02", "kind": "dedicated", "text": "我享受和其他玩家直接竞争，而不是只完成自己的任务。", "effects": [{ "dimension": "CA", "pole": "C", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-C-03", "kind": "dedicated", "text": "一款游戏最好拥有明确的目标、赢家和输家。", "effects": [{ "dimension": "CA", "pole": "C", "weight": 1.2, "polarity": 1 }] },
+
+    { "id": "M-A-01", "kind": "dedicated", "text": "我喜欢讲故事、制造戏剧性，或让一局游戏产生值得回忆的场面。", "effects": [{ "dimension": "CA", "pole": "A", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-A-02", "kind": "dedicated", "text": "只要所有人都能参与并投入，游戏不一定需要强烈的胜负。", "effects": [{ "dimension": "CA", "pole": "A", "weight": 1.2, "polarity": 1 }] },
+
+    { "id": "M-G-01", "kind": "dedicated", "text": "我更喜欢和固定的小团体反复开桌。", "effects": [{ "dimension": "GP", "pole": "G", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-G-02", "kind": "dedicated", "text": "2–4 人的游戏通常比大型聚会更适合我。", "effects": [{ "dimension": "GP", "pole": "G", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-G-03", "kind": "dedicated", "text": "我喜欢熟人之间经过多次游玩后形成的默契。", "effects": [{ "dimension": "GP", "pole": "G", "weight": 1.2, "polarity": 1 }] },
+
+    { "id": "M-P-01", "kind": "dedicated", "text": "玩家人数越多，桌游里可以出现的互动和可能性就越丰富。", "effects": [{ "dimension": "GP", "pole": "P", "weight": 1.2, "polarity": 1 }] },
+    { "id": "M-P-02", "kind": "dedicated", "text": "我喜欢在桌游中认识新朋友，而不只和熟人一起玩。", "effects": [{ "dimension": "GP", "pole": "P", "weight": 1.2, "polarity": 1 }] },
+
+    { "id": "M-X-01", "kind": "cross", "text": "我喜欢规则不重、但每一轮都可能因为骰子或抽牌而出现新机会的游戏。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 1.0, "polarity": 1 }, { "dimension": "LH", "pole": "L", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-02", "kind": "cross", "text": "我愿意为了更深的策略空间，接受复杂规则和一定程度的局势变化。", "effects": [{ "dimension": "LH", "pole": "H", "weight": 1.0, "polarity": 1 }, { "dimension": "RS", "pole": "R", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-03", "kind": "cross", "text": "即使一次随机事件让对手翻盘，只要过程刺激，我仍会觉得这场竞争很棒。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 1.0, "polarity": 1 }, { "dimension": "CA", "pole": "C", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-04", "kind": "cross", "text": "我希望竞争结果主要来自清晰的规划，而不是被随机效果左右。", "effects": [{ "dimension": "CA", "pole": "C", "weight": 1.0, "polarity": 1 }, { "dimension": "RS", "pole": "S", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-05", "kind": "cross", "text": "多人局面越不可预测，我越容易被它吸引。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 1.0, "polarity": 1 }, { "dimension": "GP", "pole": "P", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-06", "kind": "cross", "text": "我更愿意在人数较多的局里处理复杂关系，而不是只和固定朋友玩。", "effects": [{ "dimension": "GP", "pole": "P", "weight": 1.0, "polarity": 1 }, { "dimension": "RS", "pole": "R", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-07", "kind": "cross", "text": "我喜欢规则简单、结果明确，而且可以马上和朋友较量的游戏。", "effects": [{ "dimension": "LH", "pole": "L", "weight": 1.0, "polarity": 1 }, { "dimension": "CA", "pole": "C", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-08", "kind": "cross", "text": "我愿意接受复杂决策，只要它能让竞争变得更有层次。", "effects": [{ "dimension": "CA", "pole": "C", "weight": 1.0, "polarity": 1 }, { "dimension": "LH", "pole": "H", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-09", "kind": "cross", "text": "多人聚会中，最重要的是让规则简单到所有人都能马上加入。", "effects": [{ "dimension": "LH", "pole": "L", "weight": 1.0, "polarity": 1 }, { "dimension": "GP", "pole": "P", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-10", "kind": "cross", "text": "即使人数很多，我也愿意等待和学习，只要多人关系本身足够有趣。", "effects": [{ "dimension": "GP", "pole": "P", "weight": 1.0, "polarity": 1 }, { "dimension": "LH", "pole": "H", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-11", "kind": "cross", "text": "我喜欢在人数不多的熟人局里，通过卡位和算分进行高密度竞争。", "effects": [{ "dimension": "CA", "pole": "C", "weight": 1.0, "polarity": 1 }, { "dimension": "GP", "pole": "G", "weight": 0.7, "polarity": 1 }] },
+    { "id": "M-X-12", "kind": "cross", "text": "多人游戏只要能让所有人持续交流和投入，就算胜负不那么重要也很好玩。", "effects": [{ "dimension": "GP", "pole": "P", "weight": 1.0, "polarity": 1 }, { "dimension": "CA", "pole": "A", "weight": 0.7, "polarity": 1 }] },
+
+    { "id": "M-GEN-01", "kind": "general", "text": "我会把一款游戏能否制造难忘场面，放在它是否容易赢之前。", "effects": [{ "dimension": "CA", "pole": "A", "weight": 0.6, "polarity": 1 }, { "dimension": "GP", "pole": "P", "weight": 0.45, "polarity": 1 }] },
+    { "id": "M-GEN-02", "kind": "general", "text": "我愿意反复研究同一款游戏，直到找到更稳定、更高效的打法。", "effects": [{ "dimension": "RS", "pole": "S", "weight": 0.6, "polarity": 1 }, { "dimension": "LH", "pole": "H", "weight": 0.45, "polarity": 1 }] },
+    { "id": "M-GEN-03", "kind": "general", "text": "一款游戏只要能迅速让大家产生互动，我就愿意把它带到聚会上。", "effects": [{ "dimension": "LH", "pole": "L", "weight": 0.6, "polarity": 1 }, { "dimension": "CA", "pole": "A", "weight": 0.45, "polarity": 1 }, { "dimension": "GP", "pole": "P", "weight": 0.35, "polarity": 1 }] },
+    { "id": "M-GEN-04", "kind": "general", "text": "我更容易被一款能不断改变局势、但仍给我选择空间的游戏吸引。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 0.6, "polarity": 1 }, { "dimension": "CA", "pole": "C", "weight": 0.45, "polarity": 1 }] },
+    { "id": "M-GEN-05", "kind": "general", "text": "我希望游戏结束时，不只是分数有结果，整桌人也留下共同经历。", "effects": [{ "dimension": "CA", "pole": "A", "weight": 0.6, "polarity": 1 }, { "dimension": "GP", "pole": "G", "weight": 0.45, "polarity": 1 }] },
+    { "id": "M-GEN-06", "kind": "general", "text": "如果一款游戏的规则和流程都很扎实，我愿意给它比普通游戏更长的学习时间。", "effects": [{ "dimension": "LH", "pole": "H", "weight": 0.6, "polarity": 1 }, { "dimension": "RS", "pole": "S", "weight": 0.45, "polarity": 1 }] },
+    { "id": "M-GEN-07", "kind": "general", "text": "我会根据当天的人数和气氛，灵活改变自己想玩的游戏类型。", "effects": [{ "dimension": "GP", "pole": "P", "weight": 0.6, "polarity": 1 }, { "dimension": "CA", "pole": "A", "weight": 0.45, "polarity": 1 }] },
+    { "id": "M-GEN-08", "kind": "general", "text": "当一款游戏让我能通过细节积累优势时，我会愿意忽略它不够热闹的一面。", "effects": [{ "dimension": "RS", "pole": "S", "weight": 0.6, "polarity": 1 }, { "dimension": "CA", "pole": "C", "weight": 0.45, "polarity": 1 }, { "dimension": "LH", "pole": "H", "weight": 0.35, "polarity": 1 }] },
+    { "id": "M-GEN-09", "kind": "general", "text": "我更在意一款游戏能不能让新玩家顺利加入，而不是老玩家能不能精确算尽。", "effects": [{ "dimension": "LH", "pole": "L", "weight": 0.6, "polarity": 1 }, { "dimension": "CA", "pole": "A", "weight": 0.45, "polarity": 1 }, { "dimension": "GP", "pole": "P", "weight": 0.35, "polarity": 1 }] },
+    { "id": "M-GEN-10", "kind": "general", "text": "我喜欢那些每次开桌都能因为玩家不同而呈现不同面貌的游戏。", "effects": [{ "dimension": "RS", "pole": "R", "weight": 0.6, "polarity": 1 }, { "dimension": "GP", "pole": "P", "weight": 0.45, "polarity": 1 }, { "dimension": "CA", "pole": "A", "weight": 0.35, "polarity": 1 }] },
+
+    { "id": "A-CD-01", "kind": "auxDedicated", "text": "即使一款桌游暂时没有机会开桌，我仍然愿意因为版本、扩展或设计背景而拥有它。", "effects": [{ "dimension": "CD", "pole": "Collector", "weight": 1.2, "polarity": 1 }] },
+    { "id": "A-DO-01", "kind": "auxDedicated", "text": "一款桌游买回来后，我会尽快开箱、教学并实际游玩。", "effects": [{ "dimension": "CD", "pole": "Doer", "weight": 1.2, "polarity": 1 }] },
+    { "id": "A-OF-01", "kind": "auxDedicated", "text": "我愿意主动发起桌游局，安排人数、时间、游戏和现场流程。", "effects": [{ "dimension": "OF", "pole": "Organizer", "weight": 1.2, "polarity": 1 }] },
+    { "id": "A-F-01", "kind": "auxDedicated", "text": "有人把游戏和时间安排好后，我更愿意直接入座享受过程。", "effects": [{ "dimension": "OF", "pole": "Follower", "weight": 1.2, "polarity": 1 }] },
+    { "id": "A-X-01", "kind": "auxCross", "text": "我不仅想拥有好游戏，也愿意为它找到合适的玩家和出场时机。", "effects": [{ "dimension": "CD", "pole": "Collector", "weight": 1.0, "polarity": 1 }, { "dimension": "OF", "pole": "Organizer", "weight": 0.7, "polarity": 1 }] },
+    { "id": "A-X-02", "kind": "auxCross", "text": "我不太关心收藏是否完整，只要有人发起一场合适的游戏，我就愿意加入。", "effects": [{ "dimension": "CD", "pole": "Doer", "weight": 1.0, "polarity": 1 }, { "dimension": "OF", "pole": "Follower", "weight": 0.7, "polarity": 1 }] }
+  ]
+}

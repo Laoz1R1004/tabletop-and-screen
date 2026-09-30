@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090a"><title>桌游人格测试 · 一桌一屏</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"><link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/personality.css">
+  <script type="module" src="js/pwa.js"></script>
+</head>
+<body class="personality-page">
+  <div class="ambient ambient--tabletop" aria-hidden="true"></div>
+  <header class="app-nav liquid-strong">
+    <a class="brand-lockup" href="index.html"><img class="brand-mark" src="assets/brand-mark.svg" width="40" height="40" alt=""><span><b>一桌·一屏</b><small>Tabletop &amp; Screen</small></span></a>
+    <nav class="section-nav" aria-label="收藏版块"><a href="tabletop.html">一桌</a><a href="screen.html">一屏</a><a href="sessions.html">桌游局</a><a href="personality.html" class="is-active" aria-current="page">人格测试</a></nav>
+    <div class="nav-actions"><a class="secondary-button" href="tabletop.html">返回一桌</a></div>
+  </header>
+  <main class="personality-shell">
+    <section id="landing" class="personality-landing liquid-strong"><p class="personality-kicker">TABLETOP PERSONALITY</p><h1>你是哪一种<br><em>桌游人格？</em></h1><p>48 道选择，读出你在桌边真正寻找的东西：是翻盘、构筑、胜负，还是一整桌人的火花。</p><div class="landing-meta"><span>48 道题</span><span>约 6 分钟</span><span>不保存记录</span></div><button class="primary-button personality-start" id="startButton">开始测试 <span aria-hidden="true">→</span></button><p class="personality-note">每次进入都会重新随机题序。结果仅在本次打开页面期间保留。</p></section>
+    <section id="quiz" class="personality-quiz liquid-strong" hidden aria-live="polite"><div class="quiz-top"><span id="progressLabel">1 / 48</span><button class="ghost-button" id="quitButton">退出测试</button></div><div class="progress-track"><span id="progressBar"></span></div><p class="personality-kicker">YOUR TABLETOP INSTINCT</p><h1 id="questionText"></h1><div id="answerOptions" class="answer-options"></div><div class="quiz-actions"><button class="ghost-button" id="prevButton" disabled>← 上一题</button><span>按 1–5 选择</span></div></section>
+    <section id="result" class="personality-result" hidden></section>
+  </main>
+  <div class="wide-window-notice" role="status">请使用宽度至少 1024px 的桌面浏览器打开。</div>
+  <script type="module" src="js/personality.js"></script>
+</body>
+</html>
