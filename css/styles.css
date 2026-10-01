@@ -497,8 +497,11 @@ textarea { min-height: 110px; resize: vertical; }
 .wishlist-row__price { font-variant-numeric:tabular-nums; font-size:15px; text-align:right; }
 .wishlist-row__price.is-empty { color:var(--ink-3); font-size:13px; }
 .wishlist-row__actions { display:flex; align-items:center; justify-content:flex-end; gap:5px; }
-.wishlist-row--editing { grid-template-columns:minmax(0,1fr) 160px 150px; background:rgba(255,255,255,.09); }
+.wishlist-row--editing { grid-template-columns:minmax(0,1fr) 130px 160px 150px; background:rgba(255,255,255,.09); }
 .wishlist-row--editing input { width:100%; min-width:0; border:1px solid rgba(255,255,255,.2); border-radius:5px; background:rgba(0,0,0,.22); color:var(--ink); padding:10px 11px; }
+.wishlist-row--editing select { width:100%; min-width:0; border:1px solid rgba(255,255,255,.2); border-radius:5px; background:#171819; color:var(--ink); padding:10px 11px; }
+.wishlist-status-field { display:flex; flex-direction:column; gap:4px; color:var(--ink-2); font-size:11px; }
+.wishlist-row__price.is-unreleased { color:var(--ink-2); font-size:13px; letter-spacing:.04em; }
 .wishlist-empty { min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--ink-2); }
 .wishlist-empty h3 { font:28px var(--brand); color:var(--ink); margin:0 0 10px; }
 .wishlist-empty p { margin:0 0 22px; }
