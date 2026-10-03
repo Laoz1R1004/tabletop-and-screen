@@ -5,8 +5,18 @@ export const blank = v => v === null || v === undefined || v === '';
 export const themeTags = text => [...new Set(text.split(/[，,]/).map(v => v.trim()).filter(Boolean))];
 
 export function defaultScreen() {
-  return { games: [], wishlist: [], taxonomies: { types: ['策略类','动作类','解谜类','恐怖类','经营类','剧情类','聚会类','模拟器','体育类','肉鸽类','沙盒类','射击类','休闲类','RPG类','战略类'], themes: [] },
+  return { games: [], wishlist: [], priorityPlayIds: [], taxonomies: { types: ['策略类','动作类','解谜类','恐怖类','经营类','剧情类','聚会类','模拟器','体育类','肉鸽类','沙盒类','射击类','休闲类','RPG类','战略类'], themes: [] },
     view: { mode: 'collection', groupBy: 'types', sortBy: 'rating', sortDirection: 'asc', filters: [], search: '', collapsedGroups: [], wishlistSort: 'lowestPrice', wishlistDirection: 'asc' } };
+}
+export function normalizePriorityIds(ids, games, limit = 3) {
+  const valid = new Set((games || []).map(game => game.id));
+  return [...new Set(Array.isArray(ids) ? ids : [])].filter(id => valid.has(id)).slice(0, limit);
+}
+export function movePriorityId(ids, id, offset) {
+  const result = [...ids], index = result.indexOf(id), target = index + offset;
+  if (index < 0 || target < 0 || target >= result.length) return result;
+  [result[index], result[target]] = [result[target], result[index]];
+  return result;
 }
 export function emptyWishlistItem() { const now = new Date().toISOString(); return { id: `wish-${crypto.randomUUID()}`, name: '', releaseStatus: 'released', lowestPrice: null, createdAt: now, updatedAt: now }; }
 export function normalizeLowestPrice(value) { return blank(value) ? null : Number(Number(value).toFixed(2)); }

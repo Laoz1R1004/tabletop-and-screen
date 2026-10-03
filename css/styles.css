@@ -505,6 +505,24 @@ textarea { min-height: 110px; resize: vertical; }
 .wishlist-empty { min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--ink-2); }
 .wishlist-empty h3 { font:28px var(--brand); color:var(--ink); margin:0 0 10px; }
 .wishlist-empty p { margin:0 0 22px; }
+.priority-play { margin:0 0 24px; padding:22px 26px; border-radius:14px; }
+.priority-play__head { display:flex; align-items:center; justify-content:space-between; gap:24px; padding-bottom:16px; box-shadow:0 1px rgba(255,255,255,.11); }
+.priority-play__head h2 { font:25px/1.35 var(--brand); margin:0 0 5px; }
+.priority-play__head p:last-child { color:var(--ink-2); font-size:12px; margin:0; }
+.priority-play__add { display:flex; align-items:center; gap:8px; }
+.priority-play__add select { min-width:220px; border:1px solid rgba(255,255,255,.16); border-radius:5px; background:#171819; color:var(--ink); padding:10px 11px; }
+.priority-play__list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding-top:16px; }
+.priority-play__row { display:grid; grid-template-columns:26px 44px minmax(0,1fr) auto; align-items:center; gap:9px; min-width:0; padding:9px 10px; border-radius:8px; background:rgba(255,255,255,.05); }
+.priority-play__index { color:var(--ink-3); font:12px var(--brand); font-variant-numeric:tabular-nums; }
+.priority-play__cover { width:44px; height:50px; object-fit:cover; border-radius:4px; background:rgba(255,255,255,.08); }
+.priority-play__cover--empty { display:grid; place-items:center; color:var(--ink-3); }
+.priority-play__cover--empty svg { width:17px; }
+.priority-play__row strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; }
+.priority-play__actions { display:flex; align-items:center; gap:2px; }
+.priority-play__actions .square-button { width:28px; height:28px; }
+.priority-play__actions svg { width:14px; height:14px; }
+.priority-play__empty { grid-column:1/-1; color:var(--ink-3); font-size:12px; padding:10px 0 2px; }
+@media(max-width:1280px){.priority-play__list{grid-template-columns:1fr}.priority-play__head{align-items:flex-start;flex-direction:column}.priority-play__add{width:100%}.priority-play__add select{flex:1}}
 @media(max-width:1280px){ .wishlist-panel { padding:28px; } .wishlist-head { align-items:flex-start; flex-direction:column; gap:20px; } }
 
 @keyframes stageEnter {

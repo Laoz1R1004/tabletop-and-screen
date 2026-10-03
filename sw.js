@@ -1,5 +1,5 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v4';
+const CACHE = 'tabletop-screen-shell-v5';
 const FILES = [
   'index.html', 'tabletop.html', 'screen.html', 'css/styles.css',
   'sessions.html', 'css/sessions.css', 'js/sessions.js', 'js/session-domain.js',
