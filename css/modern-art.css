@@ -1,0 +1,103 @@
+.theater-page { background-color:var(--ground); background-image:radial-gradient(ellipse at 58% 30%, #242426 0, #101112 42%, var(--ground) 76%); }
+.theater-skip { position:fixed; top:8px; left:8px; z-index:100; padding:12px; background:var(--ground); transform:translateY(-150%); }
+.theater-skip:focus { transform:none; }
+.theater-shell { max-width:1800px; margin:0 auto; padding:44px 40px 40px; display:grid; grid-template-columns:192px minmax(0,1fr); gap:36px; }
+.theater-index { align-self:start; position:sticky; top:128px; max-height:calc(100vh - 150px); overflow-y:auto; scrollbar-width:thin; scrollbar-color:#555 transparent; padding-right:6px; }
+.theater-eyebrow, .theater-heading { font-size:12px; letter-spacing:.12em; color:var(--ink-2); }
+.theater-index h1 { font:42px/1.2 var(--brand); margin:16px 0 12px; }
+.theater-subtitle { color:var(--ink-2); font-size:13px; margin-bottom:32px; }
+.chapter-group { margin-bottom:20px; }
+.chapter-group h2 { font-size:13px; font-weight:600; margin:0 0 8px; }
+.chapter-group button { width:100%; text-align:left; background:transparent; color:var(--ink-2); min-height:36px; padding:6px 10px; border-radius:4px; font-size:12px; }
+.chapter-group button:hover { background:var(--glass); color:var(--ink); }
+.chapter-group button[aria-current] { background:rgba(255,255,255,.12); color:var(--ink); box-shadow:inset 2px 0 var(--ink); }
+.theater-source { margin-top:28px; display:grid; gap:10px; font-size:12px; color:var(--ink-2); }
+.theater-source a { text-decoration:underline; text-underline-offset:4px; }
+.theater-source small { font-size:10px; line-height:1.7; color:var(--ink-3); }
+.theater-heading { display:flex; justify-content:space-between; margin-bottom:20px; }
+.theater-body { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(300px,1fr); gap:32px; align-items:stretch; }
+.auction-stage { margin:0; border-radius:12px; min-width:0; overflow:hidden; background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.01)); }
+.stage-topline { padding:20px 24px; display:flex; justify-content:space-between; color:var(--ink-2); font-size:11px; letter-spacing:.04em; }
+.stage-visual { position:relative; height:440px; padding:12px 24px; isolation:isolate; }
+.stage-visual::before { content:""; position:absolute; z-index:-1; inset:65px 30px 70px; border-radius:50%; background:radial-gradient(ellipse,#3a3a3c,#1b1b1d 65%,transparent 66%); box-shadow:0 48px 60px -45px #000; }
+.auction-stage figcaption { min-height:60px; padding:0 24px 20px; color:var(--ink-2); font-size:12px; text-align:center; }
+.lesson-prelude { color:var(--ink-2); font-size:13px; line-height:1.8; margin:8px 0 14px; }
+.lesson-copy h2 { font:36px/1.3 var(--brand); margin:0 0 24px; }
+.lesson-copy h2:focus, .theater-details h2:focus { outline:none; }
+.narration-beat { display:grid; grid-template-columns:22px 1fr; gap:10px; margin:0 0 18px; opacity:.56; transition:opacity .25s; }
+.narration-beat.is-active, .narration-beat.is-past { opacity:1; }
+.narration-beat span { font-size:11px; color:var(--ink-2); padding-top:4px; font-variant-numeric:tabular-nums; }
+.narration-beat p { font-size:15px; line-height:1.85; margin:0; }
+.lesson-takeaway { margin-top:24px; padding-top:18px; box-shadow:inset 0 1px rgba(255,255,255,.14); }
+.lesson-takeaway span { color:var(--ink-2); font-size:11px; letter-spacing:.12em; }
+.lesson-takeaway p { font-size:14px; line-height:1.8; margin:8px 0 16px; }
+.lesson-copy .ghost-button { padding-left:0; font-size:12px; }
+.theater-controls { margin-top:24px; padding:18px 0; box-shadow:inset 0 1px rgba(255,255,255,.12); display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.animation-controls, .scene-controls { display:flex; gap:8px; align-items:center; }
+.animation-controls button { font-size:12px; }
+#animationStatus { font-size:11px; color:var(--ink-2); }
+.theater-controls button:disabled { opacity:.35; cursor:default; }
+.museum { position:absolute; display:grid; justify-items:center; gap:6px; width:116px; font-size:12px; text-align:center; z-index:2; }
+.museum img { width:72px; height:52px; object-fit:contain; border-radius:2px; }
+.museum small { font-size:10px; color:var(--ink-2); }
+.museum--0 { bottom:16px; left:calc(50% - 58px); }
+.museum--1 { left:4px; top:162px; }
+.museum--2 { top:0; left:calc(50% - 58px); }
+.museum--3 { right:4px; top:162px; }
+.museum.is-bid { color:var(--ink); }
+.bid-bubble { background:#ececec; color:#131313; padding:4px 12px; border-radius:4px; font-weight:700; min-width:60px; animation:bid-in .3s ease-out both; }
+.auction-center { position:absolute; inset:110px 108px 110px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; }
+.card-fan { display:flex; align-items:center; justify-content:center; width:100%; }
+.painting { width:92px; height:134px; object-fit:contain; background:#eee; border-radius:3px; box-shadow:0 12px 24px #0008; animation:painting-in .5s var(--ease) both; }
+.card-fan .painting + .painting { margin-left:-45px; }
+.card-fan .painting:nth-child(1) { transform:rotate(-12deg); }
+.card-fan .painting:nth-child(2) { transform:rotate(-6deg); }
+.card-fan .painting:nth-child(4) { transform:rotate(6deg); }
+.card-fan .painting:nth-child(5) { transform:rotate(12deg); }
+.auction-method { font-size:12px; padding:5px 10px; background:rgba(255,255,255,.1); border-radius:3px; text-align:center; }
+.hammer { width:54px; height:26px; object-fit:contain; position:absolute; bottom:109px; left:calc(50% + 64px); animation:hammer-in .5s ease-out both; }
+.museum .hammer { width:38px; height:20px; top:-10px; right:-6px; left:auto; bottom:auto; }
+.second-painting { position:relative; }
+.second-painting span { position:absolute; inset:0 0 auto; padding:5px 2px; background:#eee; color:#111; font-size:10px; text-align:center; line-height:1.4; }
+.trade-money { position:absolute; left:calc(50% - 20px); bottom:110px; width:45px; font-size:13px; font-weight:700; text-align:center; z-index:4; animation:pay-seller 1.4s ease-in-out both; }
+.trade-money img { width:45px; height:50px; object-fit:contain; }
+.trade-money.to-bank { animation-name:pay-bank; }
+.owned-painting { position:absolute; bottom:132px; left:calc(50% - 36px); width:72px; height:98px; object-fit:contain; background:#eee; border-radius:3px; animation:purchase-in 1.2s var(--ease) both; }
+.board-image { width:180px; height:180px; object-fit:contain; border-radius:3px; box-shadow:0 12px 32px #0009; }
+.component-layout { display:flex; align-items:center; gap:14px; }
+.component-layout img:not(.board-image) { width:65px; height:75px; object-fit:contain; border-radius:3px; }
+.hand-stack { display:flex; gap:5px; }
+.hand-stack i { width:22px; height:35px; border-radius:2px; background:repeating-linear-gradient(45deg,#444 0 2px,#272727 2px 5px); box-shadow:inset 0 0 0 1px #888; }
+.market-columns { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; width:100%; }
+.market-column { text-align:center; display:flex; align-items:center; flex-direction:column; gap:8px; font-size:10px; }
+.market-column img { width:36px; height:52px; object-fit:contain; background:#eee; }
+.market-column b { font-size:22px; }
+.value-tile { width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:#ddd; color:#171717; font-size:13px; font-weight:700; box-shadow:inset 0 0 0 3px #aaa; }
+.market-column .value-tile.is-zero { opacity:.5; }
+.market-view .auction-center { inset:80px 30px 110px; }
+.market-view .museum--1, .market-view .museum--3 { top:auto; bottom:16px; }
+.market-view .museum--2 { display:none; }
+.stage-visual[data-mode="value"] .museum, .stage-visual[data-mode="new-round"] .museum { display:none; }
+.stage-visual[data-mode="finale"] .museum--2 { display:grid; }
+.value-equation { font-size:28px; font-variant-numeric:tabular-nums; text-align:center; line-height:1.6; }
+.value-equation small { display:block; font-size:12px; color:var(--ink-2); }
+.deal-schedule { display:flex; gap:18px; text-align:center; }
+.deal-schedule b { font-size:28px; display:block; }
+.deal-schedule small { font-size:11px; color:var(--ink-2); }
+.final-money { font-size:56px; line-height:1.1; font-weight:600; letter-spacing:-.06em; }
+.theater-details { border-radius:12px; padding:36px; align-self:start; }
+.theater-details h2 { font:38px var(--brand); margin:8px 0 16px; }
+.theater-details > p { color:var(--ink-2); }
+#detailList { margin:28px 0; display:grid; grid-template-columns:1fr 1fr; gap:12px; align-items:start; }
+#detailList details { padding:16px 18px; background:rgba(255,255,255,.045); border-radius:6px; }
+#detailList summary { cursor:pointer; font-size:14px; font-weight:600; min-height:24px; }
+#detailList details p { color:var(--ink-2); font-size:14px; line-height:1.9; margin:16px 0 0; }
+@keyframes painting-in { from { opacity:0; translate:0 -20px; } to { opacity:1; translate:0 0; } }
+@keyframes bid-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+@keyframes hammer-in { from { opacity:0; transform:rotate(-15deg); } to { opacity:1; transform:none; } }
+@keyframes pay-seller { from { opacity:0; transform:translate(0,80px); } 30% { opacity:1; } to { opacity:1; transform:translate(-140px,-65px); } }
+@keyframes pay-bank { from { opacity:0; transform:translate(0,80px); } 30% { opacity:1; } to { opacity:1; transform:translate(0,-110px); } }
+@keyframes purchase-in { from { opacity:0; transform:translate(0,-130px); } to { opacity:1; transform:none; } }
+@media(min-width:1600px) { .stage-visual { height:510px; } .auction-center { inset:140px 130px 130px; } .painting { width:112px; height:162px; } .museum--1,.museum--3 { top:195px; } }
+@media(max-width:1280px) { .theater-shell { padding-left:24px; padding-right:24px; gap:24px; grid-template-columns:165px minmax(0,1fr); } .theater-index h1 { font-size:36px; white-space:nowrap; } .theater-body { gap:22px; grid-template-columns:minmax(0,1.15fr) minmax(280px,1fr); } .lesson-copy h2 { font-size:30px; } .stage-visual { height:410px; } .museum { width:90px; } .museum--0,.museum--2 { left:calc(50% - 45px); } .museum--1,.museum--3 { top:145px; } .museum img { width:60px; height:43px; } .auction-center { inset:95px 85px 115px; } .painting { width:74px; height:108px; } .card-fan .painting + .painting { margin-left:-42px; } .stage-topline { padding:16px; } .theater-controls { flex-wrap:wrap; } .market-view .auction-center { inset:75px 20px 120px; } }
+@media(prefers-reduced-motion:reduce) { .theater-page *, .theater-page *::before { animation:none !important; transition:none !important; } .trade-money { transform:translate(-140px,-65px); } .trade-money.to-bank { transform:translate(0,-110px); } }
