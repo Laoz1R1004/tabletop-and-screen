@@ -514,8 +514,9 @@ dialog:modal { position:fixed; inset:0; margin:auto; max-height:calc(100dvh - 48
 .priority-play__head { display:flex; align-items:center; justify-content:space-between; gap:24px; padding-bottom:16px; box-shadow:0 1px rgba(255,255,255,.11); }
 .priority-play__head h2 { font:25px/1.35 var(--brand); margin:0 0 5px; }
 .priority-play__head p:last-child { color:var(--ink-2); font-size:12px; margin:0; }
-.priority-play__add { display:flex; align-items:center; gap:8px; }
-.priority-play__add select { min-width:220px; border:1px solid rgba(255,255,255,.16); border-radius:5px; background:#171819; color:var(--ink); padding:10px 11px; }
+.priority-play__add { display:flex; flex-wrap:nowrap; align-items:center; gap:8px; min-width:0; }
+.priority-play__add select { width:320px; max-width:100%; min-width:0; flex:1 1 220px; height:44px; border:1px solid rgba(255,255,255,.16); border-radius:5px; background:#171819; color:var(--ink); padding:10px 11px; }
+.priority-play__add button { flex:0 0 auto; white-space:nowrap; height:44px; }
 .priority-play__list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding-top:16px; }
 .priority-play__row { display:grid; grid-template-columns:26px 44px minmax(0,1fr) auto; align-items:center; gap:9px; min-width:0; padding:9px 10px; border-radius:8px; background:rgba(255,255,255,.05); }
 .priority-play__index { color:var(--ink-3); font:12px var(--brand); font-variant-numeric:tabular-nums; }
@@ -527,7 +528,7 @@ dialog:modal { position:fixed; inset:0; margin:auto; max-height:calc(100dvh - 48
 .priority-play__actions .square-button { width:28px; height:28px; }
 .priority-play__actions svg { width:14px; height:14px; }
 .priority-play__empty { grid-column:1/-1; color:var(--ink-3); font-size:12px; padding:10px 0 2px; }
-@media(max-width:1280px){.priority-play__list{grid-template-columns:1fr}.priority-play__head{align-items:flex-start;flex-direction:column}.priority-play__add{width:100%}.priority-play__add select{flex:1}}
+@media(max-width:1280px){.priority-play__list{grid-template-columns:1fr}.priority-play__head{gap:16px}.priority-play__add{max-width:50%}.priority-play__add select{flex:1}}
 @media(max-width:1280px){ .wishlist-panel { padding:28px; } .wishlist-head { align-items:flex-start; flex-direction:column; gap:20px; } }
 
 @keyframes stageEnter {
