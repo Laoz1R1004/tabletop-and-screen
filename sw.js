@@ -1,7 +1,8 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v7';
+const CACHE = 'tabletop-screen-shell-v8';
 const FILES = [
   'index.html', 'tabletop.html', 'screen.html', 'css/styles.css',
+  'js/font-ready.js', 'js/dialog-position.js',
   'sessions.html', 'css/sessions.css', 'js/sessions.js', 'js/session-domain.js',
   'personality.html', 'css/personality.css', 'js/personality.js', 'js/personality-domain.js', 'data/personality-question-bank.json',
   'modern-art.html', 'css/modern-art.css', 'js/modern-art.js', 'js/modern-art-content.js', 'js/rule-theaters.js',

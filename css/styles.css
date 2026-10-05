@@ -1,7 +1,7 @@
 @font-face {
   font-family: "ZhuoYi";
   src: url("../assets/FZZhuoYTJW_Te.TTF") format("truetype");
-  font-display: swap;
+  font-display: block;
 }
 
 :root {
@@ -24,6 +24,7 @@
 }
 
 * { box-sizing: border-box; }
+.brand-font-loading body { visibility: hidden; }
 html { min-width: 1024px; scroll-behavior: smooth; background: var(--ground); }
 body {
   min-width: 1024px;
@@ -424,6 +425,7 @@ textarea { min-height: 110px; resize: vertical; }
   color: var(--ink);
 }
 .app-dialog::backdrop { background: rgba(0,0,0,.64); backdrop-filter: blur(8px); }
+dialog:modal { position:fixed; inset:0; margin:auto; max-height:calc(100dvh - 48px); overflow-y:auto; }
 .app-dialog form { display: grid; gap: 15px; }
 .app-dialog label { display: grid; gap: 5px; }
 .dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
@@ -497,7 +499,10 @@ textarea { min-height: 110px; resize: vertical; }
 .wishlist-row__price { font-variant-numeric:tabular-nums; font-size:15px; text-align:right; }
 .wishlist-row__price.is-empty { color:var(--ink-3); font-size:13px; }
 .wishlist-row__actions { display:flex; align-items:center; justify-content:flex-end; gap:5px; }
-.wishlist-row--editing { grid-template-columns:minmax(0,1fr) 130px 160px 150px; background:rgba(255,255,255,.09); }
+.wishlist-row--editing { grid-template-columns:minmax(0,1fr) 130px 160px 150px; background:rgba(255,255,255,.09); align-items:end; }
+.wishlist-row--editing > label { display:grid; gap:6px; min-width:0; }
+.wishlist-row--editing > label > span { color:var(--ink-2); font:11px/1.5 var(--body); }
+.wishlist-row--editing input, .wishlist-row--editing select { height:44px; font:15px/1.5 var(--body); }
 .wishlist-row--editing input { width:100%; min-width:0; border:1px solid rgba(255,255,255,.2); border-radius:5px; background:rgba(0,0,0,.22); color:var(--ink); padding:10px 11px; }
 .wishlist-row--editing select { width:100%; min-width:0; border:1px solid rgba(255,255,255,.2); border-radius:5px; background:#171819; color:var(--ink); padding:10px 11px; }
 .wishlist-status-field { display:flex; flex-direction:column; gap:4px; color:var(--ink-2); font-size:11px; }

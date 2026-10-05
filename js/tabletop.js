@@ -1,5 +1,6 @@
 import {applyFilters,buildGroups,emptyGame,formatDecimal,formatPlayCount,hashPin,makeId,searchGames,sortGames,validateGame,validateExpansion} from "./domain.js";
 import {ruleTheaterFor} from "./rule-theaters.js";
+import {showDialogWithoutScroll} from "./dialog-position.js";
 import {clearDraft,createBackupPayload,deleteImage,downloadBackup,getImage,loadDraft,loadState,putImage,readBackupFile,restoreBackup,saveDraft,saveState,summarizeBackup} from "./storage.js";
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -48,7 +49,7 @@ async function saveGame(){readForm();const errors=validateGame(draft);draft.expa
 async function cancel(){if(dirty&&!await ask("取消编辑？","正式收藏不会改变，未使用图片会被清理。","取消编辑",true))return;for(const id of pending)await deleteImage(id);pending.clear();draft&&await clearDraft(draft.id);const n=isNew;draft=null;dirty=false;isNew=false;if(n){openId=null;openGroup=null}render()}
 async function close(){if(dirty&&!await ask("放弃未保存的修改？","请先保存或取消当前草稿。","继续编辑"))return;draft=null;isNew=false;dirty=false;openId=openGroup=openExp=null;ambient(null);render()}
 async function image(file,path){try{const id=await putImage(file);pending.add(id);if(path==="game")draft.coverId=id;else{const e=draft.expansions.find(x=>x.id===path.split(":")[1]);if(e)e.coverId=id}autosave();render()}catch(e){toast(e.message)}}
-async function unlock(){const setup=!state.security.pinHash,d=$("#pinDialog");$("#pinTitle").textContent=setup?"创建编辑密码":"进入编辑模式";$("#pinDescription").textContent=setup?"设置 6 位数字密码。用于防止误编辑，不会加密本地数据。":"输入 6 位数字密码解锁编辑。";$("#pinConfirmField").hidden=!setup;$("#pinInput").value=$("#pinConfirmInput").value="";$("#pinError").textContent="";d.dataset.setup=setup;d.showModal();return new Promise(r=>d.addEventListener("close",()=>r(editing),{once:true}))}
+async function unlock(){const setup=!state.security.pinHash,d=$("#pinDialog");$("#pinTitle").textContent=setup?"创建编辑密码":"进入编辑模式";$("#pinDescription").textContent=setup?"设置 6 位数字密码。用于防止误编辑，不会加密本地数据。":"输入 6 位数字密码解锁编辑。";$("#pinConfirmField").hidden=!setup;$("#pinInput").value=$("#pinConfirmInput").value="";$("#pinError").textContent="";d.dataset.setup=setup;showDialogWithoutScroll(d,$("#pinInput"));return new Promise(r=>d.addEventListener("close",()=>r(editing),{once:true}))}
 function openDrawer(d){$$(".drawer.is-open").forEach(x=>x.classList.remove("is-open"));d.classList.add("is-open");d.ariaHidden="false";E.scrim.hidden=false}
 function closeDrawers(){$$(".drawer.is-open").forEach(x=>{x.classList.remove("is-open");x.ariaHidden="true"});E.scrim.hidden=true}
 function defaultFilter(field){const t=FILTER[field][1];return{field,operator:t==="number"?"gte":t==="multi"?"any":t==="text"?"contains":"eq",value:t==="multi"?[]:t==="bool"?true:t==="single"?state.taxonomies[FILTER[field][2]][0]:""}}

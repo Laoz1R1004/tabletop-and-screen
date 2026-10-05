@@ -1,4 +1,5 @@
 import {hashPin, formatDecimal} from './domain.js';
+import {showDialogWithoutScroll} from './dialog-position.js';
 import {loadState, loadDraft, saveDraft, clearDraft, saveSession, deleteSession, syncSession, setSessionPin, snapshotCover, createBackupPayload, downloadBackup} from './storage.js';
 import {createSession, createPhase, addSessionGame, sessionItems, sessionTitle, sessionSummary, sortSessions, validateSession, moveItem, SESSION_STATUSES, ITEM_STATUSES, SESSION_THEMES} from './session-domain.js';
 
@@ -24,7 +25,7 @@ function askUnlock() {
   const dialog=$('#sessionPinDialog');$('#sessionPinForm').reset();$('#sessionPinError').textContent='';
   $('#sessionPinTitle').textContent=state.security.pinHash?'进入编辑':'设置编辑密码';
   $('#sessionPinConfirm').hidden=!!state.security.pinHash;
-  dialog.showModal();
+  showDialogWithoutScroll(dialog,dialog.querySelector('input'));
   return new Promise(resolve=>dialog.addEventListener('close',()=>resolve(unlocked),{once:true}));
 }
 $('#sessionPinForm').addEventListener('submit',async event=>{
