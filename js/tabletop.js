@@ -1,6 +1,8 @@
 import {applyFilters,buildGroups,emptyGame,formatDecimal,formatPlayCount,hashPin,makeId,searchGames,sortGames,validateGame,validateExpansion} from "./domain.js";
 import {ruleTheaterFor} from "./rule-theaters.js";
 import {showDialogWithoutScroll} from "./dialog-position.js";
+import {setCloudGuard} from './cloud-sync.js';
+import './cloud-ui.js';
 import {clearDraft,createBackupPayload,deleteImage,downloadBackup,getImage,loadDraft,loadState,putImage,readBackupFile,restoreBackup,saveDraft,saveState,summarizeBackup} from "./storage.js";
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
@@ -103,4 +105,6 @@ function bind(){
 }
 document.addEventListener("submit",e=>{if(e.target.id==="gameEditor"){e.preventDefault();saveGame()}});
 async function init(){state=await loadState();options();bind();backupStatus();render();const last=state.meta.lastBackupAt?new Date(state.meta.lastBackupAt).getTime():0;if(state.games.length&&new Date(state.meta.updatedAt).getTime()>last&&Date.now()-last>30*864e5)toast("收藏已超过 30 天没有完整备份","去备份",()=>openDrawer($("#backupDrawer")))}
+setCloudGuard(()=>!state || !!draft || !!document.querySelector('dialog[open],#categoryDrawer.is-open,#filterDrawer.is-open') || document.querySelector('#importInput')?.disabled);
+window.addEventListener('tts-cloud-applied',async()=>{if(draft)return;state=await loadState();options();backupStatus();render();});
 init().catch(e=>{console.error(e);E.collection.innerHTML=`<div class="empty-collection"><div><h2>收藏无法载入</h2><p>${esc(e.message)}</p></div></div>`});

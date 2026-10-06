@@ -57,10 +57,12 @@
   <div class="wide-window-notice" role="status">请使用宽度至少 1024px 的桌面浏览器打开。</div>
   <script type="module">
     import { loadState } from "./js/storage.js";
-    loadState().then((state) => {
+    import './js/cloud-ui.js';
+    function updateCounts() {loadState().then((state) => {
       document.getElementById("homeGameCount").textContent = state.games.length;
       document.getElementById("homeScreenCount").textContent = state.screen.games.length;
-    });
+    });}
+    updateCounts();window.addEventListener('tts-cloud-applied',updateCounts);
   </script>
 </body>
 </html>

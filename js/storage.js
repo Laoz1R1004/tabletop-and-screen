@@ -1,11 +1,21 @@
 import { createDefaultState, makeId, normalizeBackup } from "./domain.js";
 import {validateSession, sessionItems, syncSessionPlays} from './session-domain.js';
+import {cloudState, same, mergeCloud} from './cloud-domain.js';
 
 const DB_NAME = "tabletop-and-screen";
 const DB_VERSION = 1;
 const loadedPlays = new WeakMap();
+const loadedSnapshots = new WeakMap();
+function collectionChanged() {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('tts-local-save'));
+}
+function touchLocalRevision(store) {
+  const read=store.get('local-revision');
+  read.onsuccess=()=>store.put((read.result || 0)+1,'local-revision');
+}
 function rememberPlays(state) {
   loadedPlays.set(state,new Map(state.games.map(game=>[game.id,game.plays])));
+  loadedSnapshots.set(state,cloudState(state));
   return state;
 }
 
@@ -40,9 +50,9 @@ async function transact(storeName, mode, action) {
       db.close();
       resolve(result?.result);
     };
-    transaction.onerror = () => {
+    transaction.onabort = transaction.onerror = () => {
       db.close();
-      reject(transaction.error);
+      reject(transaction.error || Error('保存已取消，本地数据保持不变'));
     };
   });
 }
@@ -57,7 +67,7 @@ export async function loadState() {
   return rememberPlays(normalizeBackup({ format: "tabletop-and-screen", version: 1, state, images: [] }).state);
 }
 
-export function mergeSavedState(current, state, scope = 'tabletop', baselinePlays) {
+export function mergeSavedState(current, state, scope = 'tabletop', baselinePlays, baseline) {
   if (!current) return structuredClone(state);
   const next = structuredClone(current);
   const fields = scope === 'screen' ? ['screen'] : ['games', 'taxonomies', 'view'];
@@ -68,21 +78,44 @@ export function mergeSavedState(current, state, scope = 'tabletop', baselinePlay
   }
   next.security = structuredClone(current.security?.pinHash ? current.security : state.security);
   next.meta = { ...current.meta, ...state.meta, lastBackupAt: [current.meta?.lastBackupAt, state.meta?.lastBackupAt].filter(Boolean).sort().at(-1) || null };
+  if(baseline) {
+    const base=structuredClone(baseline), candidate=structuredClone(baseline);
+    if(scope==='screen')candidate.screen=cloudState(next).screen;
+    else {
+      candidate.games=structuredClone(next.games);candidate.taxonomies=structuredClone(next.taxonomies);
+      // Preserve the existing session-to-play-count merge when it is the only remote change.
+      for(const old of base.games) {
+        const latest=current.games.find(g=>g.id===old.id), local=candidate.games.find(g=>g.id===old.id);
+        if(!latest||!local || baselinePlays?.get(old.id)!==state.games.find(g=>g.id===old.id)?.plays)continue;
+        const omit=g=>{const copy={...g};delete copy.plays;delete copy.updatedAt;return copy;};
+        if(same(omit(old),omit(latest))) {Object.assign(old,structuredClone(latest));local.plays=latest.plays;}
+      }
+    }
+    candidate.security=structuredClone(state.security);
+    const merged=mergeCloud(base,candidate,cloudState(current));
+    if(merged.conflicts.length)throw Error('收藏已在其他窗口修改。请保留草稿，重新打开后再保存。');
+    Object.assign(next,merged.state,{screen:{...next.screen,...merged.state.screen}});
+  }
   return next;
 }
 
 export async function saveState(state, scope = 'tabletop') {
   state.meta = { ...state.meta, updatedAt: new Date().toISOString() };
-  let saved;
-  await transact("state", "readwrite", (store) => {
+  let saved, failure;
+  try {await transact("state", "readwrite", (store) => {
     const read = store.get('app');
     read.onsuccess = () => {
-      saved=mergeSavedState(read.result, state, scope, loadedPlays.get(state));
-      store.put(saved, 'app');
+      try {
+        saved=mergeSavedState(read.result, state, scope, loadedPlays.get(state),loadedSnapshots.get(state));
+        store.put(saved, 'app');
+        touchLocalRevision(store);
+      } catch(error) {failure=error;store.transaction.abort();}
     };
-  });
+  });} catch(error) {throw failure || error;}
   if(scope==='tabletop')for(const game of state.games)game.plays=saved.games.find(g=>g.id===game.id)?.plays ?? game.plays;
+  for(const field of ['games','taxonomies','security','screen','sessions'])state[field]=structuredClone(saved[field]);
   rememberPlays(state);
+  collectionChanged();
   return state;
 }
 
@@ -125,7 +158,7 @@ export async function putImage(file) {
   if (!file?.type?.startsWith("image/")) throw new Error("请选择图片文件");
   const id = makeId("image");
   const thumbnail = await createThumbnail(file);
-  await transact("images", "readwrite", (store) => store.put({
+  await mutateImages((store) => store.put({
     id,
     name: file.name || "cover",
     type: file.type,
@@ -141,7 +174,15 @@ export async function getImage(id, size = "thumbnail") {
   return record?.[size] ?? record?.original ?? null;
 }
 
-export const deleteImage = (id) => id ? transact("images", "readwrite", (store) => store.delete(id)) : Promise.resolve();
+export const deleteImage = (id) => id ? mutateImages(store=>store.delete(id)) : Promise.resolve();
+async function mutateImages(action) {
+  const db=await openDb();
+  try {await new Promise((resolve,reject)=>{
+    const tx=db.transaction(['images','state'],'readwrite');
+    action(tx.objectStore('images'));touchLocalRevision(tx.objectStore('state'));
+    tx.oncomplete=resolve;tx.onabort=tx.onerror=()=>reject(tx.error || Error('图片保存失败'));
+  });} finally {db.close();}
+}
 
 function blobToDataUrl(blob) {
   return new Promise((resolve, reject) => {
@@ -235,13 +276,14 @@ export async function restoreBackup(payload, onProgress = () => {}) {
     const stateStore = transaction.objectStore("state");
     const imageStore = transaction.objectStore("images");
     transaction.objectStore("drafts").clear();
-    stateStore.clear();
     imageStore.clear();
     stateStore.put(normalized.state, "app");
+    touchLocalRevision(stateStore);
     imageRecords.forEach((image) => imageStore.put(image));
     transaction.oncomplete = resolve;
     transaction.onabort = transaction.onerror = () => reject(transaction.error || new Error('恢复未完成，原收藏保持不变'));
   }); } finally { db.close(); }
+  collectionChanged();
   return rememberPlays(normalized.state);
 }
 
@@ -270,10 +312,10 @@ async function mutateApp(change) {
     read.onsuccess=()=>{
       try {
         const state=read.result || createDefaultState(); state.sessions ||= [];
-        result=change(state);state.meta={...state.meta,updatedAt:new Date().toISOString()};store.put(state,'app');
+        result=change(state);state.meta={...state.meta,updatedAt:new Date().toISOString()};store.put(state,'app');touchLocalRevision(store);
       } catch(error) { failure=error;tx.abort(); }
     };
-    tx.oncomplete=()=>{db.close();resolve(result);};
+    tx.oncomplete=()=>{db.close();collectionChanged();resolve(result);};
     tx.onabort=tx.onerror=()=>{db.close();reject(failure || tx.error || Error('保存失败'));};
   });
 }
@@ -316,4 +358,41 @@ export function setSessionPin(pinHash) {
 }
 export async function snapshotCover(id) {
   const blob=await getImage(id);return blob ? blobToDataUrl(blob) : '';
+}
+
+export const loadCloudMeta = () => transact('state','readonly',store=>store.get('cloud-sync'));
+export const saveCloudMeta = meta => transact('state','readwrite',store=>store.put(meta,'cloud-sync'));
+export const loadCloudCheckpoint = () => transact('state','readonly',store=>store.get('cloud-checkpoint'));
+export const listImageRecords = () => transact('images','readonly',store=>store.getAll());
+export const loadLocalRevision = async () => (await transact('state','readonly',store=>store.get('local-revision'))) || 0;
+
+// Downloads finish before this transaction. Never clear images or unsaved drafts.
+// Refuse to apply if a local save raced with the network operation.
+export async function applyCloudState(expected, incoming, images, meta, expectedRevision) {
+  const db=await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(['state','images'],'readwrite'), store=tx.objectStore('state');
+    let failure;
+    const revision=store.get('local-revision');
+    const read=store.get('app');
+    read.onsuccess=()=>{
+      try {
+        const current=read.result || createDefaultState();
+        if(expectedRevision!==undefined && (revision.result || 0)!==expectedRevision)throw Error('LOCAL_CHANGED');
+        if (!same(cloudState(current),expected)) throw Error('LOCAL_CHANGED');
+        const oldImages=tx.objectStore('images').getAll();
+        oldImages.onsuccess=()=>store.put({state:structuredClone(current),images:oldImages.result,
+          savedAt:new Date().toISOString()},'cloud-checkpoint');
+        const next={...current,...structuredClone(incoming),
+          view:current.view, meta:{...current.meta,updatedAt:new Date().toISOString()},
+          screen:{...current.screen,...structuredClone(incoming.screen),view:current.screen.view}};
+        const checked=normalizeBackup({format:'tabletop-and-screen',version:1,state:next,images:[]}).state;
+        store.put(checked,'app');store.put(meta,'cloud-sync');
+        touchLocalRevision(store);
+        for(const image of images)tx.objectStore('images').put(image);
+      } catch(error) {failure=error;tx.abort();}
+    };
+    tx.oncomplete=()=>{db.close();resolve();};
+    tx.onabort=tx.onerror=()=>{db.close();reject(failure || tx.error || Error('云端收藏未应用，本地数据保持不变'));};
+  });
 }

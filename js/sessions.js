@@ -1,4 +1,6 @@
 import {hashPin, formatDecimal} from './domain.js';
+import {setCloudGuard} from './cloud-sync.js';
+import './cloud-ui.js';
 import {showDialogWithoutScroll} from './dialog-position.js';
 import {loadState, loadDraft, saveDraft, clearDraft, saveSession, deleteSession, syncSession, setSessionPin, snapshotCover, createBackupPayload, downloadBackup} from './storage.js';
 import {createSession, createPhase, addSessionGame, sessionItems, sessionTitle, sessionSummary, sortSessions, validateSession, moveItem, SESSION_STATUSES, ITEM_STATUSES, SESSION_THEMES} from './session-domain.js';
@@ -252,6 +254,11 @@ document.addEventListener('drop',event=>{
 });
 document.addEventListener('dragend',()=>{dragging=null;document.querySelectorAll('.drag-over').forEach(e=>e.classList.remove('drag-over'));});
 window.addEventListener('beforeunload',event=>{if(dirty){event.preventDefault();event.returnValue='';}});
+setCloudGuard(()=>!state || editing || busy || dirty || !!document.querySelector('dialog[open]'));
+window.addEventListener('tts-cloud-applied',async()=>{
+  if(editing||dirty)return;const id=current?.id;state=await loadState();
+  current=structuredClone(state.sessions.find(s=>s.id===id)||sortSessions(state.sessions)[0]||null);coverCache.clear();render();
+});
 document.addEventListener('visibilitychange',()=>{if(document.hidden && dirty)persistDraft().catch(()=>{});});
 try {state=await loadState();current=structuredClone(sortSessions(state.sessions)[0]||null);$('#resumeDraft').hidden=!await loadDraft(DRAFT_KEY);render();}
 catch(error){$('#sessionDetail').textContent='无法读取本机记录，请不要清除浏览器数据。'+error.message;}

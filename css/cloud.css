@@ -1,0 +1,11 @@
+.cloud-panel { margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,.12); }
+.cloud-panel h3 { margin: 0 0 12px; font: inherit; font-size: 20px; }
+.cloud-panel #cloudStatus { margin: 0 0 16px; color: rgba(255,255,255,.8); line-height: 1.6; overflow-wrap: anywhere; }
+.cloud-panel form { display: grid; gap: 12px; }
+.cloud-panel label { color: rgba(255,255,255,.65); font: inherit; font-size: 14px; }
+.cloud-panel input { width: 100%; min-width: 0; min-height: 44px; font: inherit; }
+.cloud-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.cloud-panel [hidden] { display: none !important; }
+.cloud-panel button { min-height: 44px; }
+.cloud-dialog h2 { font: inherit; font-size: 24px; margin: 0 0 16px; }
+.cloud-dialog p { line-height: 1.8; color: rgba(255,255,255,.75); }

@@ -1,6 +1,8 @@
 import {applyFilters, formatDecimal, hashPin} from './domain.js';
 import {RATINGS, PLATFORMS, PROGRESS, blank, themeTags, emptyScreenGame, emptyWishlistItem, normalizeHours, normalizeLowestPrice, formatHours, validateScreenGame, validateWishlistItem, sortScreenGames, sortWishlist, groupScreenGames, screenGroupKeys, searchScreenGames, normalizePriorityIds, movePriorityId} from './screen-domain.js';
 import {loadState, saveState, loadDraft, saveDraft, clearDraft, putImage, getImage, createBackupPayload, downloadBackup, readBackupFile, restoreBackup, summarizeBackup} from './storage.js';
+import {setCloudGuard} from './cloud-sync.js';
+import './cloud-ui.js';
 
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const esc = (v='') => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -238,5 +240,7 @@ function bind() {
   $('#drawerScrim').onclick=closeDrawers;$$('[data-close-drawer]').forEach(b=>b.onclick=closeDrawers);
 }
 async function init(){app=await loadState();options();bind();render();if(await loadDraft('screen-new'))toast('有一份未完成的新游戏草稿，点击“添加游戏”可继续')}
+setCloudGuard(()=>!app || !!draft || !!wishlistDraft || imageBusy || !!document.querySelector('dialog[open],#categoryDrawer.is-open,#filterDrawer.is-open') || document.querySelector('#importInput')?.disabled);
+window.addEventListener('tts-cloud-applied',async()=>{if(draft||wishlistDraft)return;app=await loadState();options();render();});
 init().catch(error=>{$('#collection').innerHTML=`<div class="empty-collection"><div><h2>收藏无法载入</h2><p>${esc(error.message)}</p></div></div>`;console.error(error)});
 import {showDialogWithoutScroll} from './dialog-position.js';
