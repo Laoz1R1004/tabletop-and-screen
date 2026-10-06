@@ -1,6 +1,12 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v10';
+const CACHE = 'tabletop-screen-shell-v11';
 const FILES = [
+  'arnak.html', 'css/arnak.css', 'js/arnak.js', 'js/arnak-content.js',
+  'assets/arnak/board.webp', 'assets/arnak/research.webp', 'assets/arnak/player-board.webp',
+  'assets/arnak/funding.webp', 'assets/arnak/exploration.webp', 'assets/arnak/fear.webp',
+  'assets/arnak/guardian.webp', 'assets/arnak/site.webp', 'assets/arnak/assistant.webp', 'assets/arnak/moon-staff.webp',
+  'assets/arnak/coin.webp', 'assets/arnak/compass.webp', 'assets/arnak/tablet.webp', 'assets/arnak/arrowhead.webp',
+  'assets/arnak/jewel.webp', 'assets/arnak/idols.webp', 'assets/arnak/item.webp', 'assets/arnak/artifact.webp', 'assets/arnak/archaeologists.webp',
   'index.html', 'tabletop.html', 'screen.html', 'css/styles.css',
   'js/font-ready.js', 'js/dialog-position.js',
   'sessions.html', 'css/sessions.css', 'js/sessions.js', 'js/session-domain.js',

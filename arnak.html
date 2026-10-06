@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <link rel="preload" href="assets/FZZhuoYTJW_Te.TTF" as="font" type="font/ttf" crossorigin>
+  <script src="js/font-ready.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#08090a">
+  <title>阿纳克遗迹 · 规则剧场 · 一桌·一屏</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/modern-art.css">
+  <link rel="stylesheet" href="css/arnak.css">
+  <script type="module" src="js/pwa.js"></script>
+</head>
+<body class="theater-page arnak-page">
+  <a class="theater-skip" href="#lessonTitle">跳至讲解</a>
+  <header class="app-nav liquid-strong">
+    <a class="brand-lockup" href="index.html"><img class="brand-mark" src="assets/brand-mark.svg" width="40" height="40" alt=""><span><b>一桌·一屏</b><small>Tabletop &amp; Screen</small></span></a>
+    <nav class="section-nav" aria-label="收藏版块"><a class="is-active" href="tabletop.html">一桌</a><a href="screen.html">一屏</a></nav>
+    <div class="nav-actions"><a class="secondary-button" href="tabletop.html">返回桌上藏品</a></div>
+  </header>
+  <main class="theater-shell">
+    <aside class="theater-index">
+      <p class="theater-eyebrow">规则剧场 / CGE</p>
+      <h1>阿纳克遗迹</h1>
+      <p class="theater-subtitle">五轮探险，寻找失落的文明。</p>
+      <nav id="chapterNav" aria-label="教学章节"></nav>
+      <div class="theater-source"><span>基础版 · 鸟神庙 · 四人局</span><a href="https://filemanager.czechgames.com/storage/files/lost-ruins-of-arnak/rules/lost-ruins-of-arnak-rules-zh-s.pdf" target="_blank" rel="noopener">CGE 官方中文规则书 ↗</a><small>依据 CGE 基础版规则整理。原版配件图节选自官方规则书，版权归原权利人。动画中的位置与流程为教学示意，不是一局完整游戏。</small></div>
+    </aside>
+    <section id="lesson" class="theater-lesson" aria-labelledby="lessonTitle">
+      <div class="theater-heading"><span id="chapterLabel"></span><span id="sceneCount"></span></div>
+      <div class="theater-body">
+        <figure class="auction-stage expedition-stage liquid-strong"><div class="stage-topline"><span id="stageLabel"></span><span id="stageStatus"></span></div><div id="stageVisual" class="stage-visual"></div><figcaption id="stageCaption"></figcaption></figure>
+        <article class="lesson-copy"><p id="scenePrelude" class="lesson-prelude"></p><h2 id="lessonTitle" tabindex="-1"></h2><div id="sceneText"></div><div class="lesson-takeaway"><span>放进你的探险笔记</span><p id="takeaway"></p></div><button id="relatedDetail" class="ghost-button" type="button">查看相关细节 ↗</button></article>
+      </div>
+      <footer class="theater-controls"><div class="animation-controls"><button id="replay" class="ghost-button" type="button">重播动画</button><button id="pause" class="ghost-button" type="button">暂停动画</button><span id="animationStatus" aria-live="polite"></span></div><div class="scene-controls"><button id="previous" class="secondary-button" type="button">上一幕</button><button id="next" class="primary-button" type="button">下一幕 →</button></div></footer>
+    </section>
+    <section id="detailPanel" class="theater-details liquid-strong" hidden aria-labelledby="detailTitle"><p class="theater-eyebrow">第六章 / 随时查阅</p><h2 id="detailTitle" tabindex="-1">探险笔记</h2><p>容易混淆的边界、图标与蛇神庙差异，都放在这里。</p><div id="detailList"></div><button id="returnLesson" class="primary-button" type="button">返回讲解 →</button></section>
+  </main>
+  <div class="wide-window-notice" role="status">请使用宽度至少 1024px 的桌面浏览器打开。</div>
+  <script type="module" src="js/arnak.js"></script>
+</body>
+</html>
