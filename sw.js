@@ -1,5 +1,5 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v13';
+const CACHE = 'tabletop-screen-shell-v14';
 const FILES = [
   'css/mobile.css', 'js/mobile.js',
   'arnak.html', 'css/arnak.css', 'js/arnak.js', 'js/arnak-content.js',

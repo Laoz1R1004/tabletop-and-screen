@@ -208,7 +208,8 @@ export async function restoreBackup(payload, onProgress = () => {}) {
   const normalized = normalizeBackup(payload);
   let imageRecords = [];
   onProgress({done:0,total:normalized.images.length});
-  // Decode one original at a time: large collections can exhaust mobile memory.
+  // Restoring bytes must not depend on a device's image decoder.
+  // Use the original for display too; newly uploaded images still get thumbnails.
   for (const image of normalized.images) {
     const original = await dataUrlToBlob(image.data);
     imageRecords.push({
@@ -216,7 +217,7 @@ export async function restoreBackup(payload, onProgress = () => {}) {
       name: image.name,
       type: image.type,
       original,
-      thumbnail: await createThumbnail(original)
+      thumbnail: original
     });
     onProgress({done:imageRecords.length,total:normalized.images.length});
   }
