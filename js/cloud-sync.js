@@ -21,7 +21,9 @@ async function request(key,query='',options={}) {
   let response;
   const stage=query ? (options.method==='PUT'?'上传封面':'下载封面') : options.method==='PUT'?'保存云端记录':'连接云端';
   try {
-    response=await fetch(ENDPOINT+query,{...options,cache:'no-store',
+    // The server already sends Cache-Control: no-store. A client cache override
+    // can add Cache-Control/Pragma headers and fail Safari's CORS preflight.
+    response=await fetch(ENDPOINT+query,{...options,
       headers:{...options.headers,Authorization:`Bearer ${key}`},signal:AbortSignal.timeout(60000)});
   } catch(error) {
     throw Error(`${stage}失败：${error.name==='TimeoutError'?'请求超时':'网络请求未完成（Load failed）'}。本地收藏已保留。`);
