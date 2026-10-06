@@ -228,11 +228,12 @@ function bind() {
   $('#backupButton').onclick=()=>{if(guarded())return;$('#backupStatus').textContent=app.meta.lastBackupAt?`最近备份：${new Date(app.meta.lastBackupAt).toLocaleString('zh-CN')}`:'尚未备份';drawer('#backupDrawer')};
   $('#exportButton').onclick=safe(async()=>{await exportNow();toast('一桌与一屏的完整备份已导出')});
   $('#importInput').onchange=safe(async e=>{
-    const file=e.target.files[0];if(!file)return;
-    try{if(!editing&&!await unlock())return;const payload=await readBackupFile(file),summary=summarizeBackup(payload);
+    const input=e.target,file=input.files[0];if(!file)return;
+    input.disabled=true;$('#exportButton').disabled=true;
+    try{if(!editing&&!await unlock())return;$('#backupStatus').textContent='正在读取备份…';const payload=await readBackupFile(file),summary=summarizeBackup(payload);
       if(!await ask('恢复收藏备份',`<p>桌游 ${summary.games} 款 · 扩展 ${summary.expansions} 个 · 电子游戏 ${summary.screenGames} 款 · 愿望单 ${summary.wishlist} 款 · 桌游局 ${summary.sessions} 场 · 图片 ${summary.images} 张</p><p>${payload.hasScreenData?'将替换一桌和一屏的收藏。':'这是旧版桌游备份，现有电子游戏及其封面将保留。'}${payload.hasSessionData?"桌游局记录也将被替换。":"此备份不含桌游局，现有桌游局将保留。"}恢复前将自动导出当前完整备份。</p>`,'恢复备份'))return;
-      await exportNow('一桌一屏-恢复前自动备份');app=await restoreBackup(payload);editing=false;document.body.classList.remove('is-editing');openId=null;closeDrawers();options();render();toast('备份已恢复，编辑模式已锁定');
-    }finally{e.target.value=''}
+      await exportNow('一桌一屏-恢复前自动备份');app=await restoreBackup(payload,({done,total})=>{$('#backupStatus').textContent=`正在恢复封面 ${done} / ${total}…请保持页面打开。`});editing=false;document.body.classList.remove('is-editing');openId=null;closeDrawers();options();render();toast('备份已恢复，编辑模式已锁定');
+    }finally{input.value='';input.disabled=false;$('#exportButton').disabled=false;$('#backupStatus').textContent=app.meta.lastBackupAt?`最近备份：${new Date(app.meta.lastBackupAt).toLocaleString('zh-CN')}`:'尚未备份'}
   });
   $('#drawerScrim').onclick=closeDrawers;$$('[data-close-drawer]').forEach(b=>b.onclick=closeDrawers);
 }

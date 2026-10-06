@@ -1,6 +1,9 @@
 // Responsive presentation only. Collection storage and desktop behavior are unchanged.
 const mobile = matchMedia('(max-width:1023px)');
 const collection = document.querySelector('#collection');
+// Mobile file providers may identify JSON backups as generic documents.
+// Validate the selected file's contents instead of filtering it out in the picker.
+document.querySelector('#importInput')?.removeAttribute('accept');
 const sizes = {small:.8, medium:1, large:1.2};
 function fitCards() {
   if (!mobile.matches || !collection) return;

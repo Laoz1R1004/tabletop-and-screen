@@ -84,7 +84,20 @@ function bind(){
  $("#filterRows").onchange=e=>{const r=e.target.closest("[data-frow]");if(!r)return;readFilters();const i=Number(r.dataset.frow);if(e.target.matches("[data-ffield]"))tempFilters[i]=defaultFilter(e.target.value);else if(e.target.matches("[data-fop]"))tempFilters[i].operator=e.target.value;filterRows()};
  $("#categoryTabs").onclick=e=>{const b=e.target.closest("[data-tab]");if(b){taxTab=b.dataset.tab;categories()}};$("#addCategoryForm").onsubmit=async e=>{e.preventDefault();const v=new FormData(e.currentTarget).get("label").trim();if(!v||state.taxonomies[taxTab].includes(v))return toast("标签已存在或名称为空");state.taxonomies[taxTab].push(v);await saveState(state);e.currentTarget.reset();categories();render()};
  let drag;$("#categoryList").ondragstart=e=>drag=Number(e.target.closest("[data-ci]")?.dataset.ci);$("#categoryList").ondragover=e=>e.preventDefault();$("#categoryList").ondrop=async e=>{e.preventDefault();const to=Number(e.target.closest("[data-ci]")?.dataset.ci);if(!Number.isInteger(drag)||!Number.isInteger(to)||drag===to)return;const l=state.taxonomies[taxTab],[x]=l.splice(drag,1);l.splice(to,0,x);await saveState(state);categories();render()};
- $("#exportButton").onclick=async()=>{await exportNow();toast("完整备份已导出")};$("#importInput").onchange=async e=>{const f=e.target.files[0];if(!f)return;if(draft){toast("请先保存或取消当前编辑");e.target.value="";return}if(!editing&&!await unlock()){e.target.value="";return}try{const p=await readBackupFile(f),s=summarizeBackup(p),body=`<p>备份时间：${new Date(s.exportedAt).toLocaleString("zh-CN")}<br>桌游：${s.games} 款<br>扩展：${s.expansions} 个<br>电子游戏：${s.screenGames} 款<br>桌游局：${s.sessions} 场<br>图片：${s.images} 张</p><p>${p.hasScreenData?"一桌与一屏将被完整替换。":"旧版桌游备份将保留现有电子游戏及其封面。"}${p.hasSessionData?"桌游局记录也将被替换。":"此备份不含桌游局，现有桌游局将保留。"}恢复前会自动导出当前完整备份。</p>`;if(!await ask("完整恢复备份",body,"恢复备份",true,true))return;await exportNow("一桌一屏-恢复前自动备份");state=await restoreBackup(p);editing=false;document.body.classList.remove("is-editing");openId=openGroup=null;closeDrawers();options();render();toast("备份已完整恢复")}catch(x){toast(`恢复失败：${x.message}`)}finally{e.target.value=""}};
+ $("#exportButton").onclick=async()=>{await exportNow();toast("完整备份已导出")};$("#importInput").onchange=async e=>{
+  const input=e.target,f=input.files[0];if(!f)return;
+  if(draft){toast("请先保存或取消当前编辑");input.value="";return}
+  input.disabled=true;$("#exportButton").disabled=true;
+  try {
+   if(!editing&&!await unlock())return;
+   $("#backupStatus").textContent="正在读取备份…";
+   const p=await readBackupFile(f),s=summarizeBackup(p),body=`<p>备份时间：${new Date(s.exportedAt).toLocaleString("zh-CN")}<br>桌游：${s.games} 款<br>扩展：${s.expansions} 个<br>电子游戏：${s.screenGames} 款<br>桌游局：${s.sessions} 场<br>图片：${s.images} 张</p><p>${p.hasScreenData?"一桌与一屏将被完整替换。":"旧版桌游备份将保留现有电子游戏及其封面。"}${p.hasSessionData?"桌游局记录也将被替换。":"此备份不含桌游局，现有桌游局将保留。"}恢复前会自动导出当前完整备份。</p>`;
+   if(!await ask("完整恢复备份",body,"恢复备份",true,true))return;
+   await exportNow("一桌一屏-恢复前自动备份");
+   state=await restoreBackup(p,({done,total})=>{$("#backupStatus").textContent=`正在恢复封面 ${done} / ${total}…请保持页面打开。`});
+   editing=false;document.body.classList.remove("is-editing");openId=openGroup=null;closeDrawers();options();render();toast("备份已完整恢复");
+  }catch(x){toast(`恢复失败：${x.message}`)}finally{input.value="";input.disabled=false;$("#exportButton").disabled=false;backupStatus()}
+ };
  document.onclick=click;document.addEventListener("input",e=>{if(e.target.closest("#gameEditor")){readForm();autosave()}});document.addEventListener("change",e=>{if(e.target.matches("[data-file]")&&e.target.files[0])image(e.target.files[0],e.target.dataset.file)});document.addEventListener("dragover",e=>{const d=e.target.closest("[data-drop]");if(d){e.preventDefault();d.classList.add("is-dragging")}});document.addEventListener("dragleave",e=>e.target.closest("[data-drop]")?.classList.remove("is-dragging"));document.addEventListener("drop",e=>{const d=e.target.closest("[data-drop]");if(d){e.preventDefault();d.classList.remove("is-dragging");if(e.dataTransfer.files[0])image(e.dataTransfer.files[0],d.dataset.drop)}});document.addEventListener("paste",e=>{const f=[...e.clipboardData.files].find(x=>x.type.startsWith("image/")),d=document.activeElement.closest?.("[data-drop]");if(f&&d)image(f,d.dataset.drop)});
  $("#gameEditor")?.addEventListener("submit",e=>{e.preventDefault();saveGame()});
 }

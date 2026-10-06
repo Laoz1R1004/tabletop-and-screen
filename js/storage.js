@@ -91,18 +91,34 @@ export const saveDraft = (id, draft) => transact("drafts", "readwrite", (store) 
 export const clearDraft = (id) => transact("drafts", "readwrite", (store) => store.delete(id));
 
 export async function createThumbnail(file, maxSize = 720) {
-  const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
-  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
-  canvas.getContext("2d", { alpha: false }).drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  return new Promise((resolve, reject) => canvas.toBlob(
-    (blob) => blob ? resolve(blob) : reject(new Error("无法生成封面缩略图")),
-    "image/webp",
-    0.84
-  ));
+  let source, url;
+  try {
+    if (typeof globalThis.createImageBitmap === 'function') {
+      try { source = await createImageBitmap(file); } catch { /* Native images support some formats bitmap decoding does not. */ }
+    }
+    if (!source) {
+      url = URL.createObjectURL(file);
+      source = new Image();
+      await new Promise((resolve, reject) => {
+        source.onload = resolve;
+        source.onerror = () => reject(new Error('无法读取封面图片，请检查备份中的图片是否完整'));
+        source.src = url;
+      });
+    }
+    const scale = Math.min(1, maxSize / Math.max(source.width, source.height));
+    canvas.width = Math.max(1, Math.round(source.width * scale));
+    canvas.height = Math.max(1, Math.round(source.height * scale));
+    canvas.getContext("2d", { alpha: false }).drawImage(source, 0, 0, canvas.width, canvas.height);
+    return await new Promise((resolve, reject) => canvas.toBlob(
+      (blob) => blob ? resolve(blob) : reject(new Error("无法生成封面缩略图")),
+      "image/webp", 0.84
+    ));
+  } finally {
+    source?.close?.();
+    if (url) { source.src = ''; URL.revokeObjectURL(url); }
+    canvas.width = canvas.height = 0;
+  }
 }
 
 export async function putImage(file) {
@@ -137,8 +153,13 @@ function blobToDataUrl(blob) {
 }
 
 async function dataUrlToBlob(data) {
-  const response = await fetch(data);
-  return response.blob();
+  const match = typeof data === 'string' && /^data:(image\/[^;,]+);base64,([\s\S]*)$/.exec(data);
+  if (!match) throw new Error('备份中的封面数据格式无效，原收藏未修改');
+  let binary;
+  try { binary = atob(match[2]); } catch { throw new Error('备份中的封面数据不完整，原收藏未修改'); }
+  const bytes = new Uint8Array(binary.length);
+  for (let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  return new Blob([bytes], {type:match[1]});
 }
 
 export function makeBackupPayload(state, images, exportedAt = new Date().toISOString()) {
@@ -183,18 +204,22 @@ export async function readBackupFile(file) {
   return normalizeBackup(parsed);
 }
 
-export async function restoreBackup(payload) {
+export async function restoreBackup(payload, onProgress = () => {}) {
   const normalized = normalizeBackup(payload);
-  let imageRecords = await Promise.all(normalized.images.map(async (image) => {
+  let imageRecords = [];
+  onProgress({done:0,total:normalized.images.length});
+  // Decode one original at a time: large collections can exhaust mobile memory.
+  for (const image of normalized.images) {
     const original = await dataUrlToBlob(image.data);
-    return {
+    imageRecords.push({
       id: image.id,
       name: image.name,
       type: image.type,
       original,
       thumbnail: await createThumbnail(original)
-    };
-  }));
+    });
+    onProgress({done:imageRecords.length,total:normalized.images.length});
+  }
   if (!normalized.hasScreenData) {
     const current = await loadState();
     const records = await transact('images', 'readonly', store => store.getAll());
@@ -204,7 +229,7 @@ export async function restoreBackup(payload) {
   }
   if (!normalized.hasSessionData) normalized.state.sessions = structuredClone((await loadState()).sessions);
   const db = await openDb();
-  await new Promise((resolve, reject) => {
+  try { await new Promise((resolve, reject) => {
     const transaction = db.transaction(["state", "images", "drafts"], "readwrite");
     const stateStore = transaction.objectStore("state");
     const imageStore = transaction.objectStore("images");
@@ -214,9 +239,8 @@ export async function restoreBackup(payload) {
     stateStore.put(normalized.state, "app");
     imageRecords.forEach((image) => imageStore.put(image));
     transaction.oncomplete = resolve;
-    transaction.onerror = () => reject(transaction.error);
-  });
-  db.close();
+    transaction.onabort = transaction.onerror = () => reject(transaction.error || new Error('恢复未完成，原收藏保持不变'));
+  }); } finally { db.close(); }
   return rememberPlays(normalized.state);
 }
 
