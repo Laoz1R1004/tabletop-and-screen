@@ -2,7 +2,7 @@ import {cloudState, coverIds, same, mergeCloud, mergeImages} from './cloud-domai
 import {loadState, listImageRecords, loadCloudMeta, applyCloudState, loadLocalRevision} from './storage.js';
 import {digest, validKey, validateDocument} from './cloud-protocol.js';
 
-const ENDPOINT='https://fjygcqmvcouvlbmblakk.supabase.co/functions/v1/dynamic-processor';
+const ENDPOINT='https://tabletop-screen-sync.pages.dev/api/sync';
 const CREDENTIAL='tts-cloud-key';
 let running=false, timer, status={kind:'disconnected',message:'尚未连接云端'}, paused=false;
 let blocked=()=>false;
