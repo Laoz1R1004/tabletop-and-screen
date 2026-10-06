@@ -9,3 +9,12 @@
 .cloud-panel button { min-height: 44px; }
 .cloud-dialog h2 { font: inherit; font-size: 24px; margin: 0 0 16px; }
 .cloud-dialog p { line-height: 1.8; color: rgba(255,255,255,.75); }
+.collection-login { position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:24px; background:#141516; }
+.collection-login[hidden] { display:none; }
+.collection-login form { width:min(100%,400px); padding:32px; display:grid; gap:18px; border-radius:24px; }
+.collection-login h1 { margin:0; font-family:inherit; font-size:36px; }
+.collection-login p,.collection-login small { margin:0; color:rgba(255,255,255,.72); line-height:1.6; }
+.collection-login input { width:100%; min-height:48px; font:inherit; letter-spacing:.3em; }
+.collection-login button { min-height:48px; }
+.collection-status { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); z-index:9000; width:max-content; max-width:calc(100% - 32px); margin:0; padding:12px 18px; border-radius:12px; background:#242526; color:#fff; font:inherit; line-height:1.6; box-shadow:0 8px 30px #0006; }
+.collection-status[hidden] { display:none; }

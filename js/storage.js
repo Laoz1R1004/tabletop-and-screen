@@ -381,8 +381,11 @@ export async function applyCloudState(expected, incoming, images, meta, expected
         if(expectedRevision!==undefined && (revision.result || 0)!==expectedRevision)throw Error('LOCAL_CHANGED');
         if (!same(cloudState(current),expected)) throw Error('LOCAL_CHANGED');
         const oldImages=tx.objectStore('images').getAll();
-        oldImages.onsuccess=()=>store.put({state:structuredClone(current),images:oldImages.result,
-          savedAt:new Date().toISOString()},'cloud-checkpoint');
+        oldImages.onsuccess=()=>{
+          const checkpoint={state:structuredClone(current),images:oldImages.result,savedAt:new Date().toISOString()};
+          store.put(checkpoint,'cloud-checkpoint');
+          if(meta.conflict)store.put(checkpoint,'cloud-conflict-'+crypto.randomUUID());
+        };
         const next={...current,...structuredClone(incoming),
           view:current.view, meta:{...current.meta,updatedAt:new Date().toISOString()},
           screen:{...current.screen,...structuredClone(incoming.screen),view:current.screen.view}};
