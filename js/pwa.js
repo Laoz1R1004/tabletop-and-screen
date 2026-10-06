@@ -2,6 +2,7 @@ const installButton = document.createElement('button');
 installButton.type = 'button';
 installButton.className = 'icon-text-button';
 installButton.hidden = true;
+installButton.dataset.mobileInstall = '';
 installButton.title = '安装一桌·一屏到电脑';
 installButton.setAttribute('aria-label', installButton.title);
 installButton.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m-4-4 4 4 4-4M5 16v4h14v-4"/></svg><span>安装应用</span>';
@@ -31,3 +32,13 @@ if ('serviceWorker' in navigator) {
     console.warn('离线支持暂不可用，联网访问不受影响。', error);
   });
 }
+
+const mobileViewport = matchMedia('(max-width:1023px)');
+let mobilePresentation;
+function loadMobilePresentation() {
+  installButton.title = `安装一桌·一屏到${mobileViewport.matches ? '手机' : '电脑'}`;
+  installButton.setAttribute('aria-label', installButton.title);
+  if (mobileViewport.matches) mobilePresentation ||= import('./mobile.js');
+}
+mobileViewport.addEventListener('change', loadMobilePresentation);
+loadMobilePresentation();

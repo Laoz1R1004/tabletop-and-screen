@@ -548,11 +548,6 @@ dialog:modal { position:fixed; inset:0; margin:auto; max-height:calc(100dvh - 48
   .stage-grid { grid-template-columns: minmax(300px, 36%) 1fr; }
 }
 
-@media (max-width: 1023px) {
-  body > :not(.wide-window-notice) { display: none !important; }
-  .wide-window-notice { position: fixed; inset: 0; display: grid; place-items: center; padding: 30px; color: var(--ink); background: var(--ground); text-align: center; }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition-duration: .01ms !important; }
   .ambient::before, .ambient::after { display: none; }
