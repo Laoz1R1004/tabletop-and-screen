@@ -4,11 +4,14 @@ const collection = document.querySelector('#collection');
 // Mobile file providers may identify JSON backups as generic documents.
 // Validate the selected file's contents instead of filtering it out in the picker.
 document.querySelector('#importInput')?.removeAttribute('accept');
-const sizes = {small:.8, medium:1, large:1.2};
+const columns = {small:3, medium:2, large:1};
 function fitCards() {
   if (!mobile.matches || !collection) return;
   const selected = document.querySelector('#cardSizeSelect')?.value || 'medium';
-  collection.style.setProperty('--mobile-card-scale',Math.min(sizes[selected] || 1,collection.clientWidth / 320));
+  const count=columns[selected] || 2;
+  const gap=10;
+  collection.style.setProperty('--mobile-card-columns',count);
+  collection.style.setProperty('--mobile-card-scale',(collection.clientWidth-gap*(count-1))/(count*320));
 }
 if (collection) {
   new ResizeObserver(fitCards).observe(collection);

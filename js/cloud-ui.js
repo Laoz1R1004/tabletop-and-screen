@@ -1,4 +1,5 @@
 import {startCloudSync,cloudStatus,loginCloud,isConnected} from './cloud-sync.js';
+import {loadCloudMeta} from './storage.js';
 
 // Authentication is separate from backups. No connection codes or source selection.
 const css=document.createElement('link');css.rel='stylesheet';css.href='css/cloud.css';document.head.append(css);
@@ -38,4 +39,8 @@ gate.querySelector('form').onsubmit=async event=>{
 };
 window.addEventListener('tts-sync-status',render);
 if(!isConnected())gate.hidden=false;
+// A previously downloaded collection is immediately usable while the server checks for changes.
+if(isConnected()) {
+  try {loaded=!!(await loadCloudMeta())?.document;} catch { /* First load uses the normal gate. */ }
+}
 startCloudSync();render();

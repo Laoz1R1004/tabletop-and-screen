@@ -49,7 +49,7 @@
   .group-head { padding:0 0 12px; }
   .group-title h2 { font-size:28px; }
   .group-toggle { width:44px; height:44px; }
-  .game-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,calc(320px * var(--card-scale))),1fr)); gap:16px; justify-items:center; }
+  .game-grid { grid-template-columns:repeat(var(--mobile-card-columns,2),minmax(0,1fr)); gap:10px; justify-items:center; }
   .game-grid > .game-card { width:320px; zoom:var(--mobile-card-scale,var(--card-scale)); }
   .game-card:hover { transform:none; }
   .game-card:active { opacity:.85; }

@@ -82,22 +82,32 @@ async function prepared(state,selectedImages,localImages,remote,key) {
   const complete=new Set((remote.document?.images || []).map(i=>i.hash));
   const images=[], downloaded=[];
   const ids=coverIds(state);
-  for(let n=0;n<ids.length;n++) {
+  const transfers=new Map();
+  let cursor=0,finished=0;
+  async function prepareOne(n) {
     const id=ids[n], local=byId.get(id), known=available.get(id);
-    report('syncing',`正在同步封面 ${n+1} / ${ids.length}`);
     if (local && known && localHashes.get(id)===known.hash) {
       const item=known;
       if (!complete.has(item.hash)) {
-        await request(key,`?image=${item.hash}`,{method:'PUT',headers:{'x-image-type':item.mime},body:local.original});
+        if(!transfers.has(item.hash))transfers.set(item.hash,request(key,`?image=${item.hash}`,{method:'PUT',headers:{'x-image-type':item.mime},body:local.original}));
+        await transfers.get(item.hash);
         complete.add(item.hash);
       }
-      images.push(item);
+      images[n]=item;
     } else if (known) {
-      const original=await downloadImage(key,known,n+1,ids.length);
+      if(!transfers.has(known.hash))transfers.set(known.hash,downloadImage(key,known,n+1,ids.length));
+      const original=await transfers.get(known.hash);
       downloaded.push({id,name:'cover',type:known.mime,original,thumbnail:original});
-      images.push(known);
+      images[n]=known;
     } else throw Error('封面文件缺失，本地收藏保持不变');
+    report('syncing',`正在同步封面 ${++finished} / ${ids.length}`);
   }
+  // Bound memory and connections on phones; finish all workers before returning an error.
+  const workers=await Promise.allSettled(Array.from({length:Math.min(3,ids.length)},async()=>{
+    while(cursor<ids.length)await prepareOne(cursor++);
+  }));
+  const failed=workers.find(worker=>worker.status==='rejected');
+  if(failed)throw failed.reason;
   return {document:{state,images},downloaded};
 }
 async function exchange(key) {

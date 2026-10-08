@@ -1,5 +1,5 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v19';
+const CACHE = 'tabletop-screen-shell-v20';
 const FILES = [
   'css/cloud.css', 'js/cloud-domain.js', 'js/cloud-protocol.js', 'js/cloud-sync.js', 'js/cloud-ui.js',
   'css/mobile.css', 'js/mobile.js',
@@ -43,6 +43,10 @@ self.addEventListener('fetch', event => {
   if (!urls.has(url.href)) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
+    // The shell is versioned and installed atomically. Reuse fonts/scripts immediately;
+    // a new service-worker version supplies the next complete shell.
+    const cached=await cache.match(url.href);
+    if(cached)return cached;
     try {
       const response = await fetch(event.request, {cache: 'no-cache'});
       if (response.ok) {
