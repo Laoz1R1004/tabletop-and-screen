@@ -1,5 +1,7 @@
+import {normalizeCollections} from './collection-domain.js';
+
 export function cloudState(state) {
-  return structuredClone({games:state.games, taxonomies:state.taxonomies,
+  return normalizeCollections({games:state.games, taxonomies:state.taxonomies,
     security:state.security, sessions:state.sessions || [],
     screen:{games:state.screen.games, wishlist:state.screen.wishlist || [],
       priorityPlayIds:state.screen.priorityPlayIds || [], taxonomies:state.screen.taxonomies}});
@@ -32,6 +34,7 @@ export function counts(state) {
 
 // Three-way merge by stable record ID. A conflicting record stays intact on both sides.
 export function mergeCloud(base, local, remote) {
+  [base, local, remote] = [base, local, remote].map(normalizeCollections);
   const conflicts = [];
   function pick(b,l,r,path) {
     if (same(l,r) || same(r,b)) return structuredClone(l);

@@ -1,6 +1,7 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v20';
+const CACHE = 'tabletop-screen-shell-v21';
 const FILES = [
+  'js/collection-domain.js',
   'css/cloud.css', 'js/cloud-domain.js', 'js/cloud-protocol.js', 'js/cloud-sync.js', 'js/cloud-ui.js',
   'css/mobile.css', 'js/mobile.js',
   'arnak.html', 'css/arnak.css', 'js/arnak.js', 'js/arnak-content.js',

@@ -1,9 +1,10 @@
 import { defaultScreen } from './screen-domain.js';
 import { validateSession } from './session-domain.js';
+import {COLLECTION_TYPES, normalizeCollections} from './collection-domain.js';
 
 const DEFAULT_TAXONOMIES = {
   itemType: ["桌游", "收藏类"],
-  collectionType: ["花切扑克", "塔罗牌", "其他"],
+  collectionType: COLLECTION_TYPES,
   designSchool: ["美式", "德式", "毛线", "混合", "社交"],
   mechanisms: ["DBG", "PBG", "吹牛", "赌博", "身份", "推理", "拍卖", "成套收集", "板块放置", "工人放置", "类棋牌", "轮抽", "区域控制", "谈判", "骰子放置", "线路搭建", "行动编程", "引擎构筑", "RPG", "手牌管理", "非对称", "传承"],
   interaction: ["个人竞争", "团队竞争", "合作", "半合作"],
@@ -44,14 +45,14 @@ export function createDefaultState() {
 export function validateGame(game) {
   const errors = {};
   const isCollection = game.itemType === "collection";
-  if (!game.name?.trim()) errors.name = "请输入桌游名称";
-  if (!game.coverId) errors.coverId = "请上传桌游封面";
+  if (!game.name?.trim()) errors.name = isCollection ? "请输入条目名" : "请输入桌游名称";
+  if (!game.coverId) errors.coverId = isCollection ? "请上传藏品封面" : "请上传桌游封面";
   if (!isCollection && !game.version?.trim()) errors.version = "请输入所属版本";
   if (!isCollection && !game.designSchool) errors.designSchool = "请选择设计流派";
   if (isCollection && !game.collectionType) errors.collectionType = "请选择收藏子类";
   if (!numberInRange(game.price, 0, Number.MAX_SAFE_INTEGER)) errors.price = "购入价不能小于 0";
   if (!isCollection && !numberInRange(game.weight, 0, 5)) errors.weight = "BGG 重度应在 0–5 之间";
-  if (!isCollection && !numberInRange(game.rating, 0, 10)) errors.rating = "个人评分应在 0–10 之间";
+  if (!numberInRange(game.rating, 0, 10)) errors.rating = "个人评分应在 0–10 之间";
   if (!isCollection && !isBlank(game.plays) && (!Number.isInteger(Number(game.plays)) || Number(game.plays) < 0)) errors.plays = "开局数应为非负整数";
   if (!isCollection && (
     (isBlank(game.playerMin) && !isBlank(game.playerMax)) ||
@@ -159,6 +160,7 @@ export function searchGames(games, query) {
   if (!needle) return games;
   return games.filter((game) => [
     game.name,
+    game.brand,
     game.version,
     game.notes,
     ...(game.themes ?? []),
@@ -176,7 +178,7 @@ export function normalizeBackup(input) {
     exportedAt: input.exportedAt ?? new Date().toISOString(),
     hasScreenData: input.hasScreenData ?? Object.hasOwn(input.state, 'screen'),
     hasSessionData: input.hasSessionData ?? Object.hasOwn(input.state, 'sessions'),
-    state: {
+    state: normalizeCollections({
       ...defaults,
       ...input.state,
       games: input.state.games ?? [],
@@ -185,7 +187,7 @@ export function normalizeBackup(input) {
       view: { ...defaults.view, ...input.state.view },
       security: { ...defaults.security, ...input.state.security },
       meta: { ...defaults.meta, ...input.state.meta }
-    },
+    }),
     images: Array.isArray(input.images) ? input.images : []
   };
 }
@@ -207,6 +209,7 @@ export function emptyGame() {
     id: makeId("game"),
     itemType: "tabletop",
     collectionType: "",
+    brand: "",
     name: "",
     coverId: "",
     version: "",
