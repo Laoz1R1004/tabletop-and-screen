@@ -11,8 +11,9 @@
   "theme_color": "#08090a",
   "prefer_related_applications": false,
   "icons": [
-    {"src": "assets/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "assets/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"}
+    {"src": "assets/app-icon-ts-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "assets/app-icon-ts-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "assets/app-icon-ts-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ],
   "shortcuts": [
     {"name": "一桌 · 桌游收藏", "url": "./tabletop.html"},

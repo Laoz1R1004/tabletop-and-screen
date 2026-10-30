@@ -1,5 +1,5 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v21';
+const CACHE = 'tabletop-screen-shell-v22';
 const FILES = [
   'js/collection-domain.js',
   'css/cloud.css', 'js/cloud-domain.js', 'js/cloud-protocol.js', 'js/cloud-sync.js', 'js/cloud-ui.js',
@@ -20,8 +20,9 @@ const FILES = [
   'assets/modern-art/once.webp', 'assets/modern-art/money.webp', 'assets/modern-art/values.webp', 'assets/modern-art/hammer.webp',
   'js/domain.js', 'js/screen-domain.js', 'js/storage.js', 'js/tabletop.js',
   'js/screen.js', 'js/card-size.js', 'js/pwa.js', 'manifest.webmanifest',
-  'assets/brand-mark.svg', 'assets/favicon.svg', 'assets/FZZhuoYTJW_Te.TTF',
-  'assets/app-icon-192.png', 'assets/app-icon-512.png'
+  'assets/brand-mark-ts.png', 'assets/favicon-ts.png', 'assets/FZZhuoYTJW_Te.TTF',
+  'assets/apple-touch-icon-ts.png', 'assets/app-icon-ts-192.png',
+  'assets/app-icon-ts-512.png', 'assets/app-icon-ts-maskable-512.png'
 ];
 const urls = new Set(FILES.map(file => new URL(file, self.registration.scope).href));
 self.addEventListener('install', event => {
