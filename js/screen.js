@@ -1,3 +1,4 @@
+import {mountFacets,describeFilter} from './facet-filters.js';
 import {applyFilters, formatDecimal, hashPin} from './domain.js';
 import {RATINGS, PLATFORMS, PROGRESS, blank, themeTags, emptyScreenGame, emptyWishlistItem, normalizeHours, normalizeLowestPrice, formatHours, validateScreenGame, validateWishlistItem, sortScreenGames, sortWishlist, groupScreenGames, screenGroupKeys, searchScreenGames, normalizePriorityIds, movePriorityId} from './screen-domain.js';
 import {loadState, saveState, loadDraft, saveDraft, clearDraft, putImage, getImage, createBackupPayload, downloadBackup, readBackupFile, restoreBackup, summarizeBackup} from './storage.js';
@@ -79,7 +80,7 @@ function render() {
   if(data().view.mode==='wishlist'){ $('.view-toolbar').hidden=false; $('#groupSelect').closest('.compact-field').hidden=true; $('#sortSelect').closest('.compact-field').hidden=true; $('#sortDirectionButton').hidden=true; $('#filterButton').hidden=true; $('#groupsButton').hidden=true; $('#cardSizeSelect').closest('.compact-field').hidden=true; $('#categoryButton').hidden=true; $('#collection').classList.add('is-wishlist'); renderWishlist(); return; }
   $('.view-toolbar').hidden=false; $('#groupSelect').closest('.compact-field').hidden=false; $('#sortSelect').closest('.compact-field').hidden=false; $('#sortDirectionButton').hidden=false; $('#filterButton').hidden=false; $('#groupsButton').hidden=false; $('#cardSizeSelect').closest('.compact-field').hidden=false; $('#collection').classList.remove('is-wishlist');
   $('#filterCount').hidden=!data().view.filters.length;$('#filterCount').textContent=data().view.filters.length;
-  $('#activeFilters').innerHTML=data().view.filters.map((f,i)=>`<span class="filter-chip">${FILTER[f.field]} · ${esc(['empty','filled'].includes(f.operator)?f.operator==='empty'?'未填写':'已填写':Array.isArray(f.value)?f.value.join('、'):f.value)}<button data-act="remove-filter" data-index="${i}" aria-label="移除${FILTER[f.field]}筛选">${svg('x')}</button></span>`).join('');
+  $('#activeFilters').innerHTML=data().view.filters.map((f,i)=>`<span class="filter-chip">${FILTER[f.field]} · ${esc(describeFilter(f))}<button data-act="remove-filter" data-index="${i}" aria-label="移除${FILTER[f.field]}筛选">${svg('x')}</button></span>`).join('');
   const groups=groupScreenGames(filtered(),data().view.groupBy,data().taxonomies);
   let html=isNew&&draft?`<section class="group"><div class="game-grid">${editor()}</div></section>`:'';
   html+=groups.map(({key,games})=>`<section class="group ${data().view.collapsedGroups.includes(key)?'is-collapsed':''}"><div class="group-head"><div class="group-title"><h2>${esc(key==='__empty'?(data().view.groupBy==='rating'?'未评级':'未分类'):key)}</h2><span>${games.length} 款</span></div><button class="group-toggle" data-act="group" data-group="${esc(key)}" aria-label="切换${esc(key)}分组" aria-expanded="${!data().view.collapsedGroups.includes(key)}">${svg('chev')}</button></div><div class="game-grid">${sortScreenGames(games,data().view.sortBy,data().view.sortDirection).map(g=>card(g,key)+(g.id===openId&&key===openGroup?(draft?editor():stage(g)):'')).join('')}</div></section>`).join('');
@@ -134,26 +135,16 @@ async function upload(file) {
 }
 function drawer(id){closeDrawers();$(id).classList.add('is-open');$(id).setAttribute('aria-hidden','false');$('#drawerScrim').hidden=false;$(id).querySelector('button,input,select')?.focus()}
 function closeDrawers(){$$('.drawer').forEach(n=>{n.classList.remove('is-open');n.setAttribute('aria-hidden','true')});$('#drawerScrim').hidden=true}
-function filterValues(field) {
-  return ({types:data().taxonomies.types,themes:data().taxonomies.themes,platform:PLATFORMS,rating:RATINGS,progress:PROGRESS,owned:['已购入','未购入']})[field];
-}
-const defaultFilter = field => ({field,operator:filterValues(field)?'in':['price','hours'].includes(field)?'gte':'contains',value:filterValues(field)?[]:''});
-function filterRows() {
-  $('#filterRows').innerHTML=tempFilters.map((f,i)=>{
-    const list=filterValues(f.field),ops=list?{in:'包含任意选项',empty:'未填写',filled:'已填写'}:['price','hours'].includes(f.field)?{gte:'大于等于',lte:'小于等于',empty:'未填写',filled:'已填写'}:{contains:'包含文字',empty:'未填写',filled:'已填写'};
-    return `<div class="filter-row" data-filter="${i}"><label><span>字段</span><select data-filter-field>${Object.entries(FILTER).map(([k,v])=>`<option value="${k}" ${k===f.field?'selected':''} ${tempFilters.some((x,j)=>j!==i&&x.field===k)?'disabled':''}>${v}</option>`).join('')}</select></label><label><span>条件</span><select data-filter-op>${Object.entries(ops).map(([k,v])=>`<option value="${k}" ${k===f.operator?'selected':''}>${v}</option>`).join('')}</select></label><button class="square-button" data-act="remove-temp" data-index="${i}" aria-label="删除筛选条件">${svg('trash')}</button><div class="filter-value">${['empty','filled'].includes(f.operator)?'<small>无需填写</small>':list?`<div class="option-grid">${list.map(v=>`<button class="option-chip" data-act="filter-choice" data-index="${i}" data-value="${esc(v)}" aria-pressed="${f.value.includes(v)}">${esc(v)}</button>`).join('')||'<small>暂无可选标签</small>'}</div>`:`<label><span>值</span><input data-filter-value type="${['price','hours'].includes(f.field)?'number':'text'}" ${['price','hours'].includes(f.field)?'min="0" step="any"':''} value="${esc(f.value)}"></label>`}</div></div>`;
-  }).join('');$('#addFilterButton').disabled=tempFilters.length>=3;
-}
-function appliedFilters() {
-  return tempFilters.map(f=>{
-    if(['empty','filled'].includes(f.operator))return {...f};
-    if(filterValues(f.field)&&!f.value.length)throw Error('请为每条筛选选择至少一个选项');
-    if(['price','hours'].includes(f.field)&&(blank(f.value)||!Number.isFinite(Number(f.value))||Number(f.value)<0))throw Error('请填写有效的非负数值');
-    if(['types','themes'].includes(f.field))return {...f,operator:'any'};
-    if(f.field==='owned')return {...f,value:f.value.map(v=>v==='已购入')};
-    return {...f};
-  });
-}
+function setupFacets(){mountFacets({
+ fields:Object.entries(FILTER).map(([key,label])=>({
+ key,label,type:['price','hours'].includes(key)?'number':key==='owned'?'bool':['types','themes'].includes(key)?'multi':['name'].includes(key)?'text':'choice',
+ values:({types:()=>data().taxonomies.types,themes:()=>data().taxonomies.themes,platform:()=>PLATFORMS,rating:()=>RATINGS,progress:()=>PROGRESS})[key],
+ yes:'已购入',no:'未购入',more:['name','price','hours','developer'].includes(key)
+ })),getView:()=>data().view,getGames:()=>data().games,
+ count:filters=>searchScreenGames(applyFilters(data().games,filters),data().view.search).length,
+ apply:async filters=>{data().view.filters=structuredClone(filters);await persist();render()},
+ open:()=>drawer('#filterDrawer'),close:closeDrawers,guard:guarded
+})}
 function categories() {
   $('#categoryTabs').innerHTML=['types','themes'].map(k=>`<button role="tab" aria-selected="${taxTab===k}" data-act="tax-tab" data-field="${k}">${k==='types'?'类型':'主题'}</button>`).join('');
   $('#categoryList').innerHTML=data().taxonomies[taxTab].map(v=>`<div class="category-item"><span></span><span class="category-item__name">${esc(v)}</span><span class="category-item__count">${data().games.filter(g=>g[taxTab].includes(v)).length} 处引用</span><button data-act="tax-rename" data-value="${esc(v)}" aria-label="重命名${esc(v)}">${svg('edit')}</button><button data-act="tax-delete" data-value="${esc(v)}" aria-label="删除${esc(v)}">${svg('trash')}</button></div>`).join('');
@@ -178,8 +169,6 @@ async function click(e) {
     if(!await ask('删除游戏',`<p>删除“${esc(draft.name)}”？封面仍保留在完整备份中。</p>`,'删除游戏'))return;
     clearTimeout(timer);await clearDraft(draftKey());data().games=data().games.filter(g=>g.id!==draft.id);data().priorityPlayIds=data().priorityPlayIds.filter(id=>id!==draft.id);await persist();draft=null;dirty=false;openId=null;render();return toast('游戏已删除');
   }
-  if(action==='filter-choice'){const f=tempFilters[Number(b.dataset.index)],v=b.dataset.value;f.value=f.value.includes(v)?f.value.filter(x=>x!==v):[...f.value,v];return filterRows()}
-  if(action==='remove-temp'){tempFilters.splice(Number(b.dataset.index),1);return filterRows()}
   if(guarded())return;
   if(action==='new')return startNew();
   if(action==='open'){openId=b.dataset.id;openGroup=b.dataset.group;render();scrollStage();return}
@@ -204,7 +193,7 @@ async function click(e) {
 function bind() {
   document.addEventListener('click',safe(click));
   document.addEventListener('input',e=>{if(e.target.closest('#gameEditor')){readForm();queueDraft()}if(e.target.matches('[data-filter-value]'))tempFilters[Number(e.target.closest('[data-filter]').dataset.filter)].value=e.target.value});
-  document.addEventListener('change',safe(async e=>{if(e.target.id==='coverInput'&&e.target.files[0])await upload(e.target.files[0]);if(e.target.closest('#gameEditor')){readForm();queueDraft()}if(e.target.closest('#wishlistEditor')&&e.target.name==='releaseStatus'){wishlistDraft.releaseStatus=e.target.value;if(e.target.value==='unreleased')wishlistDraft.lowestPrice=null;renderWishlist();return}const row=e.target.closest('[data-filter]');if(row){const i=Number(row.dataset.filter);if(e.target.matches('[data-filter-field]'))tempFilters[i]=defaultFilter(e.target.value);if(e.target.matches('[data-filter-op]')){tempFilters[i].operator=e.target.value;tempFilters[i].value=filterValues(tempFilters[i].field)?[]:''}filterRows()}}));
+  document.addEventListener('change',safe(async e=>{if(e.target.id==='coverInput'&&e.target.files[0])await upload(e.target.files[0]);if(e.target.closest('#gameEditor')){readForm();queueDraft()}if(e.target.closest('#wishlistEditor')&&e.target.name==='releaseStatus'){wishlistDraft.releaseStatus=e.target.value;if(e.target.value==='unreleased')wishlistDraft.lowestPrice=null;renderWishlist();return}}));
   document.addEventListener('submit',safe(async e=>{if(e.target.id==='gameEditor'){e.preventDefault();await saveGame()}if(e.target.id==='wishlistEditor'){e.preventDefault();await saveWishlist()}if(e.target.id==='priorityAddForm'){e.preventDefault();const id=new FormData(e.target).get('gameId');if(!id)return toast('请选择一款游戏');data().priorityPlayIds=normalizePriorityIds([...data().priorityPlayIds,id],data().games);await persist();render()}}));
   document.addEventListener('dragover',e=>{if(e.target.closest('.image-drop'))e.preventDefault()});
   document.addEventListener('drop',safe(async e=>{if(e.target.closest('.image-drop')){e.preventDefault();if(e.dataTransfer.files[0])await upload(e.dataTransfer.files[0])}}));
@@ -222,9 +211,6 @@ function bind() {
   for(const [id,field] of [['groupSelect','groupBy'],['sortSelect','sortBy'],['searchInput','search']])$( `#${id}`)[id==='searchInput'?'oninput':'onchange']=safe(async e=>{if(guarded()){options();return}data().view[field]=e.target.value;if(field==='groupBy'){openId=null;data().view.collapsedGroups=[]}await persist();render()});
   $('#sortDirectionButton').onclick=safe(async()=>{if(guarded())return;data().view.sortDirection=data().view.sortDirection==='asc'?'desc':'asc';await persist();options();render()});
   $('#groupsButton').onclick=safe(async()=>{if(guarded())return;const keys=groupScreenGames(filtered(),data().view.groupBy,data().taxonomies).map(g=>g.key);data().view.collapsedGroups=keys.every(k=>data().view.collapsedGroups.includes(k))?[]:keys;await persist();render()});
-  $('#filterButton').onclick=()=>{if(guarded())return;tempFilters=structuredClone(data().view.filters).map(f=>({...f,operator:f.operator==='any'?'in':f.operator,value:f.field==='owned'&&Array.isArray(f.value)?f.value.map(v=>v?'已购入':'未购入'):f.value}));filterRows();drawer('#filterDrawer')};
-  $('#addFilterButton').onclick=()=>{const field=Object.keys(FILTER).find(k=>!tempFilters.some(f=>f.field===k));if(tempFilters.length<3&&field)tempFilters.push(defaultFilter(field));filterRows()};
-  $('#clearFiltersButton').onclick=()=>{tempFilters=[];filterRows()};$('#applyFiltersButton').onclick=safe(async()=>{data().view.filters=appliedFilters();await persist();closeDrawers();render()});
   $('#categoryButton').onclick=()=>{if(!editing||guarded())return;categories();drawer('#categoryDrawer')};
   $('#addCategoryForm').onsubmit=safe(async e=>{e.preventDefault();if(!editing)return;const value=new FormData(e.target).get('label').trim();if(!value||data().taxonomies[taxTab].includes(value))return toast('名称为空或标签已存在');data().taxonomies[taxTab].push(value);await persist();e.target.reset();categories()});
   $('#backupButton').onclick=()=>{if(guarded())return;$('#backupStatus').textContent=app.meta.lastBackupAt?`最近备份：${new Date(app.meta.lastBackupAt).toLocaleString('zh-CN')}`:'尚未备份';drawer('#backupDrawer')};
@@ -239,7 +225,7 @@ function bind() {
   });
   $('#drawerScrim').onclick=closeDrawers;$$('[data-close-drawer]').forEach(b=>b.onclick=closeDrawers);
 }
-async function init(){app=await loadState();options();bind();render();if(await loadDraft('screen-new'))toast('有一份未完成的新游戏草稿，点击“添加游戏”可继续')}
+async function init(){app=await loadState();options();bind();setupFacets();render();if(await loadDraft('screen-new'))toast('有一份未完成的新游戏草稿，点击“添加游戏”可继续')}
 setCloudGuard(()=>!app || !!draft || !!wishlistDraft || imageBusy || !!document.querySelector('dialog[open],#categoryDrawer.is-open,#filterDrawer.is-open') || document.querySelector('#importInput')?.disabled);
 window.addEventListener('tts-cloud-applied',async()=>{if(draft||wishlistDraft)return;app=await loadState();options();render();});
 init().catch(error=>{$('#collection').innerHTML=`<div class="empty-collection"><div><h2>收藏无法载入</h2><p>${esc(error.message)}</p></div></div>`;console.error(error)});

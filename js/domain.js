@@ -138,6 +138,7 @@ function matchFilter(game, { field, operator, value }) {
   if (operator === "empty") return isBlank(actual) || Array.isArray(actual) && actual.length === 0;
   if (operator === "filled") return !isBlank(actual) && (!Array.isArray(actual) || actual.length > 0);
   if (operator === "eq") return actual === value || String(actual) === String(value);
+  if (operator === "supports") return game.itemType !== "collection" && !isBlank(game.playerMin) && !isBlank(game.playerMax) && Number(game.playerMin) <= Number(value) && Number(game.playerMax) >= Number(value);
   if (operator === "neq") return actual !== value && String(actual) !== String(value);
   if (operator === "gte") return !isBlank(actual) && Number(actual) >= Number(value);
   if (operator === "lte") return !isBlank(actual) && Number(actual) <= Number(value);
@@ -150,7 +151,14 @@ function matchFilter(game, { field, operator, value }) {
 }
 
 export function applyFilters(games, filters = []) {
-  if (filters.length > 3) throw new Error("最多添加 3 条筛选");
+  for (const f of filters) {
+    if (["gte","lte","between","supports"].includes(f.operator)) {
+      const values = [].concat(f.value);
+      if (values.some(v => isBlank(v) || !Number.isFinite(Number(v)) || Number(v)<0)) throw new Error("请输入有效的非负数值");
+      if (f.operator==="between" && Number(f.value[0])>Number(f.value[1])) throw new Error("最低值不能超过最高值");
+      if (f.operator==="supports" && (!Number.isInteger(Number(f.value)) || Number(f.value)<1)) throw new Error("人数应为大于零的整数");
+    }
+  }
   if (new Set(filters.map(({ field }) => field)).size !== filters.length) throw new Error("筛选字段不能重复");
   return games.filter((game) => filters.every((filter) => matchFilter(game, filter)));
 }
