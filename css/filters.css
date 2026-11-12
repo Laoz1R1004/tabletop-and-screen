@@ -1,5 +1,5 @@
 .facet-panel { display:grid; gap:22px; }
-.facet-section { padding-bottom:20px; box-shadow:0 1px 0 #ffffff12; display:grid; gap:12px; min-width:0; }
+.facet-section { padding-bottom:20px; display:grid; gap:12px; min-width:0; }
 .facet-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .facet-heading h3 { margin:0; font-size:15px; font-weight:600; }
 .facet-reset { background:none; color:#aaa; padding:6px 10px; cursor:pointer; font:inherit; border:0; }
