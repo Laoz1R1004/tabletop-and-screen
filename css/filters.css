@@ -1,4 +1,8 @@
 .facet-panel { display:grid; gap:22px; }
+/* The glass pseudo-border scrolls with the contents of the drawer. Use the
+   actual panel edge so its bottom cannot cross filter controls. */
+#filterDrawer { border:1px solid rgba(255,255,255,.22); }
+#filterDrawer::before { content:none; }
 .facet-section { padding-bottom:20px; display:grid; gap:12px; min-width:0; }
 .facet-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .facet-heading h3 { margin:0; font-size:15px; font-weight:600; }
