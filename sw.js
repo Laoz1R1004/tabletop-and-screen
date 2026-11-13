@@ -1,5 +1,5 @@
 // Bump this version when changing the offline app shell. Never cache collection data.
-const CACHE = 'tabletop-screen-shell-v25';
+const CACHE = 'tabletop-screen-shell-v26';
 const FILES = [
   'js/facet-filters.js', 'css/filters.css',
   'js/collection-domain.js',

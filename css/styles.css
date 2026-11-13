@@ -446,6 +446,9 @@ dialog:modal { position:fixed; inset:0; margin:auto; max-height:calc(100dvh - 48
 .option-grid { display: flex; flex-wrap: wrap; gap: 6px; }
 .option-chip { min-height: 36px; padding: 0 10px; border-radius: 6px; color: var(--ink-3); background: rgba(255,255,255,.05); }
 .option-chip[aria-pressed="true"] { color: #111; background: rgba(255,255,255,.88); }
+.theme-add-row { display:flex; gap:8px; align-items:center; }
+.theme-add-row input { flex:1; min-width:0; }
+.theme-add-row button { flex:none; white-space:nowrap; }
 .image-drop { min-height: 210px; border-radius: 10px; display: grid; place-items: center; text-align: center; background: rgba(0,0,0,.2); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
 .image-drop.is-dragging { background: rgba(255,255,255,.1); box-shadow: inset 0 0 0 2px rgba(255,255,255,.6); }
 .image-drop img { max-width: 100%; max-height: 260px; object-fit: contain; }

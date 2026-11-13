@@ -66,7 +66,6 @@ export function validateGame(game) {
   )) {
     errors.playerRange = "请成对填写有效的推荐人数范围";
   }
-  if ((game.mechanisms?.length ?? 0) > 3) errors.mechanisms = "设计机制最多选择 3 个";
   return errors;
 }
 
@@ -174,6 +173,15 @@ export function searchGames(games, query) {
     ...(game.themes ?? []),
     ...(game.expansions ?? []).flatMap((expansion) => [expansion.name, expansion.notes])
   ].some((value) => String(value ?? "").toLocaleLowerCase().includes(needle)));
+}
+
+// The first mechanism is primary; the ordered remainder are optional auxiliaries.
+// Keeping the existing array preserves old backups, sync and taxonomy operations.
+export function chooseMechanism(mechanisms = [], role, value) {
+  const values = [...new Set(mechanisms)];
+  if (role === "primary") return [value, ...values.filter(v => v !== value)];
+  if (!values.length || values[0] === value) return values;
+  return values.includes(value) ? values.filter(v => v !== value) : [...values, value];
 }
 
 export function normalizeBackup(input) {
